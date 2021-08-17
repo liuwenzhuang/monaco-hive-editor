@@ -1,0 +1,33 @@
+{
+  "name": "@lwz/hive-meta-data",
+  "version": "0.0.1",
+  "description": "hive sql 语法元数据，包括关键词等",
+  "keywords": [
+    "sql",
+    "hive",
+    "keywords"
+  ],
+  "author": "刘文壮 <liuwenzhuang@corp.netease.com>",
+  "homepage": "",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "files": [
+    "lib",
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "rimraf ./lib && tsc",
+    "prepare": "yarn build"
+  },
+  "dependencies": {
+    "@types/lodash-es": "^4.17.4",
+    "lodash-es": "^4.17.21"
+  },
+  "devDependencies": {
+    "rimraf": "^3.0.2",
+    "typescript": "^4.3.5"
+  }
+}
