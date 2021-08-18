@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "es2015",
+    "outDir": "./lib",
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "lib": ["es2015", "dom"],
+    "baseUrl": "./",
+    "declaration": true,
+    "moduleResolution": "node",
+    "experimentalDecorators": true
+  },
+  "exclude": ["node_modules", "lib"]
+}
