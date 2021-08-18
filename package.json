@@ -8,6 +8,9 @@
   },
   "scripts": {
     "lerna": "lerna",
+    "editor": "yarn workspace @lwz/hive-editor",
+    "parser": "yarn workspace @lwz/hive-parser",
+    "meta": "yarn workspace @lwz/hive-meta-data",
     "prettier:packages": "prettier --write \"packages/*/src/**/*.{ts,js}\"",
     "lint:packages": "eslint --fix \"packages/*/src/**/*.{ts,js}\""
   },
