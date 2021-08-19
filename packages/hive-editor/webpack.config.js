@@ -1,11 +1,8 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path')
 
-const HtmlWebpackPlugin = require('html-webpack-plugin')
-
 module.exports = {
-  mode: 'development',
-  devtool: 'cheap-module-eval-source-map',
+  mode: 'production',
   entry: {
     app: './src/index.ts',
     'editor.worker': 'monaco-editor-core/esm/vs/editor/editor.worker.js',
@@ -13,6 +10,7 @@ module.exports = {
   },
   output: {
     globalObject: 'self',
+    publicPath: './',
     filename: (chunkData) => {
       switch (chunkData.chunk.name) {
         case 'editor.worker':
@@ -23,7 +21,9 @@ module.exports = {
           return 'app.js'
       }
     },
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(__dirname, 'lib'),
+    library: 'MonacoHiveEditor',
+    libraryTarget: 'umd',
   },
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.jsx', '.css'],
@@ -44,9 +44,4 @@ module.exports = {
       },
     ],
   },
-  plugins: [
-    new HtmlWebpackPlugin({
-      template: './src/index.html',
-    }),
-  ],
 }

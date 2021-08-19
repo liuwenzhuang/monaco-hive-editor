@@ -5,18 +5,18 @@ import Languages = monaco.languages
 import HiveLanguageService from './language-service'
 import { LangError } from '@lwz/hive-parser/lib/error-listener'
 import { UDCompletionItem } from './CompletionItemAdapter'
+import { CompletionsOptions, HiveWorker as IHiveWorker } from './monaco.contribution'
 
 interface EnhanceCompletionItem extends UDCompletionItem {
   insertText: Languages.CompletionItem['insertText']
 }
 
-export interface HiveCreateData {
+export interface HiveCreateData extends CompletionsOptions {
   languageId: string
-  azkabanKeywords: UDCompletionItem[]
-  dataBases: UDCompletionItem[]
+  customWorkerPath?: string
 }
 
-export class HiveWorker {
+export class HiveWorker implements IHiveWorker {
   private languageService: HiveLanguageService
   azkabanKeywords: UDCompletionItem[]
   dataBases: UDCompletionItem[]
@@ -27,13 +27,13 @@ export class HiveWorker {
     this.dataBases = createData.dataBases
   }
 
-  doValidation(uri: string): Promise<LangError[]> {
-    const code = this.getTextDocument(uri)
+  getValidation(fileName: string): Promise<LangError[]> {
+    const code = this.getTextDocument(fileName)
     return Promise.resolve(this.languageService.validate(code))
   }
 
-  getCompletionAtPosition(uri: string, position: monaco.Position, offset: number): Promise<EnhanceCompletionItem[]> {
-    const code = this.getTextDocument(uri)
+  getCompletionsAtPosition(fileName: string, offset: number): Promise<EnhanceCompletionItem[]> {
+    const code = this.getTextDocument(fileName)
     const charAtOffset = code.charAt(offset - 1)
     if (charAtOffset === '$' && this.azkabanKeywords && this.azkabanKeywords.length > 0) {
       // 触发 azkaban
@@ -56,22 +56,56 @@ export class HiveWorker {
   }
 
   /**
-   * 根据 uri 获取当前文档的内容
-   * 如果不提供 uri，表示获取第一个文档的内容
-   * 这里 uri 使用 string，而不是 monaco.Uri 类型的原因是：
+   * 根据 fileName 获取当前文档的内容
+   * 如果不提供 fileName，表示获取第一个文档的内容
+   * 这里 fileName 使用 string，而不是 monaco.Uri 类型的原因是：
    * 主线程和 worker 交流会序列化数据，原型链会丢失
-   * @param uri
+   * @param fileName
    * @returns
    */
-  private getTextDocument(uri?: string): string {
+  private getTextDocument(fileName?: string): string {
     const models = this.ctx.getMirrorModels()
     if (!models || !models.length) {
       return ''
     }
-    const currentModel = uri ? models.find((item) => item.uri.toString() === uri) : models[0]
+    const currentModel = fileName ? models.find((item) => item.uri.toString() === fileName) : models[0]
     if (!currentModel) {
       return ''
     }
     return currentModel.getValue()
   }
+}
+
+/** The shape of the factory */
+export interface CustomTSWebWorkerFactory {
+  (HiveWorkerClass: typeof HiveWorker): typeof HiveWorker
+}
+
+declare global {
+  // eslint-disable-next-line no-var
+  var importScripts: (path: string) => void | undefined
+  // eslint-disable-next-line no-var
+  var customTSWorkerFactory: CustomTSWebWorkerFactory | undefined
+}
+
+export function create(ctx: IWorkerContext, createData: HiveCreateData): HiveWorker {
+  let HiveWorkerClass = HiveWorker
+  if (createData.customWorkerPath) {
+    if (typeof importScripts === 'undefined') {
+      console.warn(
+        'Monaco is not using webworkers for background tasks, and that is needed to support the customWorkerPath flag'
+      )
+    } else {
+      importScripts(createData.customWorkerPath)
+
+      const workerFactoryFunc: CustomTSWebWorkerFactory | undefined = self.customTSWorkerFactory
+      if (!workerFactoryFunc) {
+        throw new Error(`The script at ${createData.customWorkerPath} does not add customTSWorkerFactory to self`)
+      }
+
+      HiveWorkerClass = workerFactoryFunc(HiveWorker)
+    }
+  }
+
+  return new HiveWorkerClass(ctx, createData)
 }

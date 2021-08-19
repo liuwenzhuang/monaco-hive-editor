@@ -1,6 +1,6 @@
 import * as monaco from 'monaco-editor-core'
 
-export const languageID = 'apache-hive-sql'
+export const languageID = 'hive'
 
 export const languageExtensionPoint: monaco.languages.ILanguageExtensionPoint = {
   id: languageID,

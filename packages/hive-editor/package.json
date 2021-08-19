@@ -10,7 +10,7 @@
   "author": "刘文壮 <liuwenzhuang@corp.netease.com>",
   "homepage": "",
   "license": "MIT",
-  "main": "lib/index.js",
+  "main": "lib/app.js",
   "files": [
     "lib"
   ],
@@ -19,7 +19,8 @@
   },
   "scripts": {
     "dev": "cd test && webpack-dev-server --env development ",
-    "build:webpack": "cross-env NODE_ENV=production webpack",
+    "build:webpack": "rimraf ./lib && cross-env NODE_ENV=production webpack",
+    "prepare": "yarn build:webpack",
     "build": "rimraf ./lib && tsc"
   },
   "dependencies": {

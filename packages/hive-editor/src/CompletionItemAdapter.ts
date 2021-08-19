@@ -1,5 +1,5 @@
 import * as monaco from 'monaco-editor-core'
-import { WorkerAccessor } from './setup'
+import { WorkerAccessor } from './index'
 
 import Languages = monaco.languages
 import Editor = monaco.editor
@@ -51,7 +51,7 @@ export default class CompletionItemAdapter implements Languages.CompletionItemPr
       return
     }
 
-    const info = await worker.getCompletionAtPosition(uri.toString(), position, offset)
+    const info = await worker.getCompletionsAtPosition(uri.toString(), offset)
 
     if (!info || model.isDisposed()) {
       return
