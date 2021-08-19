@@ -16,7 +16,7 @@ export class WorkerManager {
     if (!this.workerClientProxy) {
       this.worker = monaco.editor.createWebWorker<HiveWorker>({
         // module that exports the create() method and returns a `JSONWorker` instance
-        moduleId: 'HiveWorkerTest',
+        moduleId: 'vs/language/typescript/hiveWorker',
         label: languageID,
         // passed in to the create() method
         createData: {

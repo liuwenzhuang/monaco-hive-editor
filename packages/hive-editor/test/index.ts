@@ -1,6 +1,6 @@
 import * as monaco from 'monaco-editor-core'
-import { languageID } from './config'
-import { setupLanguage } from './setup'
+import { languageID } from '../src/config'
+import { setupLanguage } from '../src/setup'
 
 setupLanguage()
 

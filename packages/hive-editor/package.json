@@ -18,27 +18,25 @@
     "access": "public"
   },
   "scripts": {
-    "dev": "webpack-dev-server --env development ",
+    "dev": "cd test && webpack-dev-server --env development ",
+    "build:webpack": "cross-env NODE_ENV=production webpack",
     "build": "rimraf ./lib && tsc"
   },
   "dependencies": {
     "@lwz/hive-meta-data": "workspace:packages/hive-meta-data",
     "@lwz/hive-parser": "workspace:packages/hive-parser",
-    "monaco-editor-core": "0.26.0",
-    "ts-loader": "8"
+    "monaco-editor-core": "0.26.0"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "css-loader": "5",
     "file-loader": "5",
     "html-webpack-plugin": "4",
-    "loader-utils": "^2.0.0",
     "mini-css-extract-plugin": "0.11.2",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
     "rimraf": "^3.0.2",
     "style-loader": "1",
+    "ts-loader": "8",
     "typescript": "3",
-    "vscode-hive-languageservice": "^0.4.1",
     "webpack": "4",
     "webpack-cli": "3",
     "webpack-dev-server": "^3.11.2",
