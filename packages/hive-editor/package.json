@@ -10,7 +10,8 @@
   "author": "刘文壮 <liuwenzhuang@corp.netease.com>",
   "homepage": "",
   "license": "MIT",
-  "main": "lib/app.js",
+  "main": "lib/umd/app.js",
+  "module": "lib/esm/index.js",
   "files": [
     "lib"
   ],
@@ -19,9 +20,9 @@
   },
   "scripts": {
     "dev": "cd test && webpack-dev-server --env development ",
-    "build:webpack": "rimraf ./lib && cross-env NODE_ENV=production webpack",
-    "prepare": "yarn build:webpack",
-    "build": "rimraf ./lib && tsc"
+    "prepare": "yarn build:umd && yarn build:esm",
+    "build:umd": "rimraf ./lib/umd && cross-env NODE_ENV=production webpack",
+    "build:esm": "rimraf ./lib/esm && tsc --build ./tsconfig.esm.json"
   },
   "dependencies": {
     "@lwz/hive-meta-data": "workspace:packages/hive-meta-data",

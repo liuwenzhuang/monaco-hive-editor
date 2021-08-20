@@ -4,7 +4,7 @@ const path = require('path')
 module.exports = {
   mode: 'production',
   entry: {
-    app: './src/index.ts',
+    index: './src/index.ts',
     'editor.worker': 'monaco-editor-core/esm/vs/editor/editor.worker.js',
     'hive.worker': './src/hive.worker.ts',
   },
@@ -18,10 +18,10 @@ module.exports = {
         case 'hive.worker':
           return 'hive.worker.js'
         default:
-          return 'app.js'
+          return 'index.js'
       }
     },
-    path: path.resolve(__dirname, 'lib'),
+    path: path.resolve(__dirname, 'lib/umd'),
     library: 'MonacoHiveEditor',
     libraryTarget: 'umd',
   },

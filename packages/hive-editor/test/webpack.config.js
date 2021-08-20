@@ -7,7 +7,7 @@ module.exports = {
   mode: 'development',
   devtool: 'cheap-module-eval-source-map',
   entry: {
-    app: './index.ts',
+    index: './index.ts',
     'editor.worker': 'monaco-editor-core/esm/vs/editor/editor.worker.js',
     'hive.worker': '../src/hive.worker.ts',
   },
@@ -20,7 +20,7 @@ module.exports = {
         case 'hive.worker':
           return 'hive.worker.js'
         default:
-          return 'app.js'
+          return 'index.js'
       }
     },
     path: path.resolve(__dirname, 'dist'),
