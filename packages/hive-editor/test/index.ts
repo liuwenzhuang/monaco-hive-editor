@@ -1,6 +1,6 @@
 import MonacoHiveEditor from '../src/index'
 
-let editorInstance
+let editorInstance: MonacoHiveEditor
 
 document.addEventListener('DOMContentLoaded', onDOMContentLoaded)
 
@@ -24,16 +24,16 @@ function onBtnGroupClick(e: Event) {
   const target = e.target as HTMLButtonElement
   switch (target.id) {
     case 'setCompletionsOptions':
-      editorInstance.updateCompletionsOptions({
+      editorInstance.setCompletionsOptions({
         azkabanKeywords: [{ label: 'az.1.day.ago', detail: '一天前' }],
         noTestDataBase: true,
       })
       break
     case 'getSelectedValue':
-      alert((editorInstance as MonacoHiveEditor).getSelectedValue())
+      alert(editorInstance.getSelectedValue())
       break
     case 'getAllSelectedValue':
-      alert((editorInstance as MonacoHiveEditor).getAllSelectedValue())
+      alert(editorInstance.getAllSelectedValue())
       break
   }
 }

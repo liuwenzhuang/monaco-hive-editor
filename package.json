@@ -8,6 +8,7 @@
   },
   "scripts": {
     "lerna": "lerna",
+    "test": "yarn workspace @lwz/hive-editor-test",
     "editor": "yarn workspace @lwz/hive-editor",
     "parser": "yarn workspace @lwz/hive-parser",
     "meta": "yarn workspace @lwz/hive-meta-data",

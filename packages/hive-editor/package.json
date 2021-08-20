@@ -12,6 +12,7 @@
   "license": "MIT",
   "main": "lib/umd/app.js",
   "module": "lib/esm/index.js",
+  "typings": "lib/esm",
   "files": [
     "lib"
   ],

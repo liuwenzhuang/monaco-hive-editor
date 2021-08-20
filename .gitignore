@@ -11,3 +11,5 @@
 node_modules
 lib
 dist
+*.log
+packages/hive-editor-test
