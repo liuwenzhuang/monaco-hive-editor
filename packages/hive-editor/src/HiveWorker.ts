@@ -21,10 +21,10 @@ export class HiveWorker implements IHiveWorker {
   azkabanKeywords: UDCompletionItem[]
   dataBases: UDCompletionItem[]
 
-  constructor(private ctx: IWorkerContext, createData: HiveCreateData) {
+  constructor(private ctx: IWorkerContext, private createData: HiveCreateData) {
     this.languageService = new HiveLanguageService()
-    this.azkabanKeywords = createData.azkabanKeywords
-    this.dataBases = createData.dataBases
+    this.azkabanKeywords = this.createData.azkabanKeywords
+    this.dataBases = this.createData.dataBases
   }
 
   getValidation(fileName: string): Promise<LangError[]> {
@@ -52,6 +52,26 @@ export class HiveWorker implements IHiveWorker {
         insertText: `${item.label}${suffixChar === '}' ? '' : '}'}`,
       }))
       return Promise.resolve(suggestions)
+    }
+    if (charAtOffset === '.') {
+      const word = this.languageService.getWordBefore(code, offset - 1)
+      if (this.dataBases.some((database) => database.label === word)) {
+        const tableReqUrl = this.createData.tableReqUrl
+        if (tableReqUrl) {
+          return this.languageService
+            .getTableByDb(tableReqUrl, word)
+            .then((list) => {
+              return list.map((item) => ({
+                ...item,
+                insertText: item.label,
+              }))
+            })
+            .catch(() => {
+              // ignore err
+              return []
+            })
+        }
+      }
     }
   }
 
