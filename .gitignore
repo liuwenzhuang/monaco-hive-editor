@@ -13,3 +13,4 @@ lib
 dist
 *.log
 packages/hive-editor-test
+.antlr
