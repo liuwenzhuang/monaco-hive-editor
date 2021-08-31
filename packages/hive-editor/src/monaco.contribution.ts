@@ -2,6 +2,7 @@ import type * as mode from './HiveMode'
 import { languages, Emitter, IEvent, Uri } from './fillers/monaco-editor-core'
 import { languageID } from './config'
 import { UDCompletionItem } from './CompletionItemAdapter'
+import { CaretPosition } from '@lwz/hive-service'
 
 export interface CompletionsOptions {
   /**
@@ -126,7 +127,7 @@ export interface HiveWorker {
   /**
    * Get code completions for the given file and position.
    */
-  getCompletionsAtPosition(fileName: string, position: number): Promise<any | undefined>
+  getCompletionsAtPosition(fileName: string, position: number, rowColumn: CaretPosition): Promise<any | undefined>
 }
 
 // --- Hive configuration and defaults ---------
@@ -200,7 +201,7 @@ export const hiveDefaults: LanguageServiceDefaults = new LanguageServiceDefaults
     ],
     dataBases: [{ label: 'test1DB', detail: '测试数据库1' }, { label: 'testDB2' }],
     noTestDataBase: false,
-    tableReqUrl: 'http://127.0.0.1:3001/getDbTables'
+    tableReqUrl: 'http://127.0.0.1:3001/getDbTables',
   },
   {},
   {}

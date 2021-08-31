@@ -6,6 +6,7 @@ import HiveLanguageService from './language-service'
 import { LangError } from '@lwz/hive-parser/lib/error-listener'
 import { UDCompletionItem } from './CompletionItemAdapter'
 import { CompletionsOptions, HiveWorker as IHiveWorker } from './monaco.contribution'
+import { CaretPosition, getSuggestions } from '@lwz/hive-service'
 
 interface EnhanceCompletionItem extends UDCompletionItem {
   insertText: Languages.CompletionItem['insertText']
@@ -32,7 +33,11 @@ export class HiveWorker implements IHiveWorker {
     return Promise.resolve(this.languageService.validate(code))
   }
 
-  getCompletionsAtPosition(fileName: string, offset: number): Promise<EnhanceCompletionItem[]> {
+  getCompletionsAtPosition(
+    fileName: string,
+    offset: number,
+    position: CaretPosition
+  ): Promise<EnhanceCompletionItem[]> {
     const code = this.getTextDocument(fileName)
     const charAtOffset = code.charAt(offset - 1)
     if (charAtOffset === '$' && this.azkabanKeywords && this.azkabanKeywords.length > 0) {
@@ -73,6 +78,7 @@ export class HiveWorker implements IHiveWorker {
         }
       }
     }
+    return Promise.resolve(getSuggestions(code, position))
   }
 
   /**

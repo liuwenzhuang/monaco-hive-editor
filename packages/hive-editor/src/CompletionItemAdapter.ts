@@ -51,7 +51,10 @@ export default class CompletionItemAdapter implements Languages.CompletionItemPr
       return
     }
 
-    const info = await worker.getCompletionsAtPosition(uri.toString(), offset)
+    const info = await worker.getCompletionsAtPosition(uri.toString(), offset, {
+      line: position.lineNumber,
+      column: position.column,
+    })
 
     if (!info || model.isDisposed()) {
       return

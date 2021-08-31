@@ -10,7 +10,7 @@
   "author": "刘文壮 <liuwenzhuang@corp.netease.com>",
   "homepage": "",
   "license": "MIT",
-  "main": "lib/umd/app.js",
+  "main": "lib/umd/index.js",
   "module": "lib/esm/index.js",
   "typings": "lib/esm",
   "files": [
@@ -21,14 +21,16 @@
   },
   "scripts": {
     "dev": "cd test && webpack-dev-server --env development ",
-    "prepare": "yarn build:umd && yarn build:esm",
+    "prepare": "yarn build",
+    "build": "yarn build:umd && yarn build:esm",
     "build:umd": "rimraf ./lib/umd && cross-env NODE_ENV=production webpack",
     "build:esm": "rimraf ./lib/esm && tsc --build ./tsconfig.esm.json"
   },
   "dependencies": {
     "@lwz/hive-meta-data": "workspace:packages/hive-meta-data",
     "@lwz/hive-parser": "workspace:packages/hive-parser",
-    "monaco-editor-core": "0.26.0"
+    "@lwz/hive-service": "workspace:packages/hive-service",
+    "monaco-editor-core": "^0.27.0"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
