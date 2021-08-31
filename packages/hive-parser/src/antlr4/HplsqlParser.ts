@@ -1,4 +1,4 @@
-// Generated from ./Hplsql.g4 by ANTLR 4.7.3-SNAPSHOT
+// Generated from ./Hplsql.g4 by ANTLR 4.9.0-SNAPSHOT
 
 
 import { ATN } from "antlr4ts/atn/ATN";
@@ -844,6 +844,10 @@ export class HplsqlParser extends Parser {
 	// @Override
 	public get serializedATN(): string { return HplsqlParser._serializedATN; }
 
+	protected createFailedPredicateException(predicate?: string, message?: string): FailedPredicateException {
+		return new FailedPredicateException(this, predicate, message);
+	}
+
 	constructor(input: TokenStream) {
 		super(input);
 		this._interp = new ParserATNSimulator(HplsqlParser._ATN, this);
@@ -1066,7 +1070,7 @@ export class HplsqlParser extends Parser {
 			{
 			this.state = 513;
 			if (!(this._input.LT(2).text.toUpperCase() !== "TRANSACTION")) {
-				throw new FailedPredicateException(this, "this._input.LT(2).text.toUpperCase() !== \"TRANSACTION\"");
+				throw this.createFailedPredicateException("this._input.LT(2).text.toUpperCase() !== \"TRANSACTION\"");
 			}
 			this.state = 514;
 			this.match(HplsqlParser.T_END);
@@ -1841,7 +1845,7 @@ export class HplsqlParser extends Parser {
 			{
 			this.state = 608;
 			if (!(this._input.LT(1).text.toUpperCase() !== "GO")) {
-				throw new FailedPredicateException(this, "this._input.LT(1).text.toUpperCase() !== \"GO\"");
+				throw this.createFailedPredicateException("this._input.LT(1).text.toUpperCase() !== \"GO\"");
 			}
 			this.state = 609;
 			this.expr(0);
@@ -7876,7 +7880,7 @@ export class HplsqlParser extends Parser {
 				        this._input.LT(1).text.toUpperCase() !== "AS" &&
 				        !(this._input.LT(1).text.toUpperCase() === "DYNAMIC" && this._input.LT(2).text.toUpperCase() === "RESULT")
 				        )) {
-					throw new FailedPredicateException(this, "this._input.LT(1).text.toUpperCase() !== \"IS\" &&\n        this._input.LT(1).text.toUpperCase() !== \"AS\" &&\n        !(this._input.LT(1).text.toUpperCase() === \"DYNAMIC\" && this._input.LT(2).text.toUpperCase() === \"RESULT\")\n        ");
+					throw this.createFailedPredicateException("this._input.LT(1).text.toUpperCase() !== \"IS\" &&\r\n        this._input.LT(1).text.toUpperCase() !== \"AS\" &&\r\n        !(this._input.LT(1).text.toUpperCase() === \"DYNAMIC\" && this._input.LT(2).text.toUpperCase() === \"RESULT\")\r\n        ");
 				}
 				this.state = 1607;
 				this.create_routine_param_item();
@@ -12760,7 +12764,7 @@ export class HplsqlParser extends Parser {
 				{
 				this.state = 2397;
 				if (!(this._input.LT(1).text.toUpperCase() !== "INTO" && this._input.LT(1).text.toUpperCase() !== "FROM")) {
-					throw new FailedPredicateException(this, "this._input.LT(1).text.toUpperCase() !== \"INTO\" && this._input.LT(1).text.toUpperCase() !== \"FROM\"");
+					throw this.createFailedPredicateException("this._input.LT(1).text.toUpperCase() !== \"INTO\" && this._input.LT(1).text.toUpperCase() !== \"FROM\"");
 				}
 				this.state = 2399;
 				this._errHandler.sync(this);
@@ -13419,7 +13423,7 @@ export class HplsqlParser extends Parser {
 			        this._input.LT(1).text.toUpperCase() !== "ORDER" &&
 			        this._input.LT(1).text.toUpperCase() !== "LIMIT" &&
 			        this._input.LT(1).text.toUpperCase() !== "WITH")) {
-				throw new FailedPredicateException(this, "this._input.LT(1).text.toUpperCase() !== \"EXEC\" &&\n        this._input.LT(1).text.toUpperCase() !== \"EXECUTE\" &&\n        this._input.LT(1).text.toUpperCase() !== \"INNER\" &&\n        this._input.LT(1).text.toUpperCase() !== \"LEFT\" &&\n        this._input.LT(1).text.toUpperCase() !== \"GROUP\" &&\n        this._input.LT(1).text.toUpperCase() !== \"ORDER\" &&\n        this._input.LT(1).text.toUpperCase() !== \"LIMIT\" &&\n        this._input.LT(1).text.toUpperCase() !== \"WITH\"");
+				throw this.createFailedPredicateException("this._input.LT(1).text.toUpperCase() !== \"EXEC\" &&\r\n        this._input.LT(1).text.toUpperCase() !== \"EXECUTE\" &&\r\n        this._input.LT(1).text.toUpperCase() !== \"INNER\" &&\r\n        this._input.LT(1).text.toUpperCase() !== \"LEFT\" &&\r\n        this._input.LT(1).text.toUpperCase() !== \"GROUP\" &&\r\n        this._input.LT(1).text.toUpperCase() !== \"ORDER\" &&\r\n        this._input.LT(1).text.toUpperCase() !== \"LIMIT\" &&\r\n        this._input.LT(1).text.toUpperCase() !== \"WITH\"");
 			}
 			this.state = 2514;
 			this._errHandler.sync(this);
@@ -15050,7 +15054,7 @@ export class HplsqlParser extends Parser {
 			{
 			this.state = 2695;
 			if (!(this._input.LT(1).text.toUpperCase() !== "ALL")) {
-				throw new FailedPredicateException(this, "this._input.LT(1).text.toUpperCase() !== \"ALL\"");
+				throw this.createFailedPredicateException("this._input.LT(1).text.toUpperCase() !== \"ALL\"");
 			}
 			this.state = 2697;
 			this._errHandler.sync(this);
@@ -15195,7 +15199,7 @@ export class HplsqlParser extends Parser {
 					this.pushNewRecursionContext(_localctx, _startState, HplsqlParser.RULE_bool_expr);
 					this.state = 2718;
 					if (!(this.precpred(this._ctx, 2))) {
-						throw new FailedPredicateException(this, "this.precpred(this._ctx, 2)");
+						throw this.createFailedPredicateException("this.precpred(this._ctx, 2)");
 					}
 					this.state = 2719;
 					this.bool_expr_logical_operator();
@@ -15820,7 +15824,7 @@ export class HplsqlParser extends Parser {
 						this.pushNewRecursionContext(_localctx, _startState, HplsqlParser.RULE_expr);
 						this.state = 2834;
 						if (!(this.precpred(this._ctx, 13))) {
-							throw new FailedPredicateException(this, "this.precpred(this._ctx, 13)");
+							throw this.createFailedPredicateException("this.precpred(this._ctx, 13)");
 						}
 						this.state = 2835;
 						_la = this._input.LA(1);
@@ -15845,7 +15849,7 @@ export class HplsqlParser extends Parser {
 						this.pushNewRecursionContext(_localctx, _startState, HplsqlParser.RULE_expr);
 						this.state = 2837;
 						if (!(this.precpred(this._ctx, 12))) {
-							throw new FailedPredicateException(this, "this.precpred(this._ctx, 12)");
+							throw this.createFailedPredicateException("this.precpred(this._ctx, 12)");
 						}
 						this.state = 2838;
 						_la = this._input.LA(1);
@@ -15870,7 +15874,7 @@ export class HplsqlParser extends Parser {
 						this.pushNewRecursionContext(_localctx, _startState, HplsqlParser.RULE_expr);
 						this.state = 2840;
 						if (!(this.precpred(this._ctx, 14))) {
-							throw new FailedPredicateException(this, "this.precpred(this._ctx, 14)");
+							throw this.createFailedPredicateException("this.precpred(this._ctx, 14)");
 						}
 						this.state = 2841;
 						this.interval_item();
@@ -18864,7 +18868,7 @@ export class HplsqlParser extends Parser {
 			{
 			this.state = 3337;
 			if (!(this._input.LT(1).text.toUpperCase() !== "INTO")) {
-				throw new FailedPredicateException(this, "this._input.LT(1).text.toUpperCase() !== \"INTO\"");
+				throw this.createFailedPredicateException("this._input.LT(1).text.toUpperCase() !== \"INTO\"");
 			}
 			this.state = 3343;
 			this._errHandler.sync(this);

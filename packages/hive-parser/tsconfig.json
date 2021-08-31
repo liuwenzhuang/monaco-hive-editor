@@ -8,7 +8,8 @@
     "baseUrl": "./",
     "declaration": true,
     "moduleResolution": "node",
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "skipLibCheck": true
   },
   "exclude": ["node_modules", "lib"]
 }

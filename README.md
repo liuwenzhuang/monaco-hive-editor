@@ -27,3 +27,7 @@ Lerna: ERR! Error: unsupported url type "workspace:": "workspace:*"
 ```
 
 原因在于依赖 `npm-package-arg/npa.js` 下的 `fromURL` 方法不能兼容 `workspace:` 的版本前缀。
+
+## yarn 2+ 版本范围确定时不会考虑版本上的标签
+
+具体情况可见[我的博文](http://liuwenzhuang.github.io/2021/08/27/yarn2-version-range-not-consider-version-tag.html)。
