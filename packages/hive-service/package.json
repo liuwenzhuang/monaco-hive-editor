@@ -1,0 +1,38 @@
+{
+  "name": "@lwz/hive-service",
+  "version": "0.0.1",
+  "description": "hive editor service for completion and so on.",
+  "keywords": [
+    "hive",
+    "sql",
+    "hql",
+    "completion",
+    "monaco"
+  ],
+  "author": "刘文壮 <liuwenzhuang@corp.netease.com>",
+  "homepage": "",
+  "license": "MIT",
+  "module": "lib/index.js",
+  "typings": "lib",
+  "files": [
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc",
+    "prepare": "rimraf lib && yarn build"
+  },
+  "dependencies": {
+    "@lwz/hive-meta-data": "workspace:packages/hive-meta-data",
+    "@lwz/hive-parser": "workspace:packages/hive-parser",
+    "antlr4-c3": "^1.1.16",
+    "antlr4ts": "^0.5.0-alpha.4",
+    "fuzzysort": "^1.1.4"
+  },
+  "devDependencies": {
+    "rimraf": "^3.0.2"
+  }
+}

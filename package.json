@@ -9,6 +9,7 @@
   "scripts": {
     "test": "yarn workspace @lwz/hive-editor-test",
     "editor": "yarn workspace @lwz/hive-editor",
+    "service": "yarn workspace @lwz/hive-service",
     "parser": "yarn workspace @lwz/hive-parser",
     "meta": "yarn workspace @lwz/hive-meta-data",
     "prettier:packages": "prettier --write \"packages/*/src/**/*.{ts,js}\"",

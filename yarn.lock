@@ -96,12 +96,13 @@ __metadata:
   dependencies:
     "@lwz/hive-meta-data": "workspace:packages/hive-meta-data"
     "@lwz/hive-parser": "workspace:packages/hive-parser"
+    "@lwz/hive-service": "workspace:packages/hive-service"
     cross-env: ^7.0.3
     css-loader: 5
     file-loader: 5
     html-webpack-plugin: 4
     mini-css-extract-plugin: 0.11.2
-    monaco-editor-core: 0.26.0
+    monaco-editor-core: ^0.27.0
     rimraf: ^3.0.2
     style-loader: 1
     ts-loader: 8
@@ -128,12 +129,23 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@lwz/hive-parser@workspace:packages/hive-parser"
   dependencies:
-    antlr4-c3: ^1.1.16
     antlr4ts: ^0.5.0-alpha.4
     antlr4ts-cli: ^0.5.0-alpha.4
-    fuzzysort: ^1.1.4
     rimraf: ^3.0.2
     typescript: 3
+  languageName: unknown
+  linkType: soft
+
+"@lwz/hive-service@workspace:packages/hive-service":
+  version: 0.0.0-use.local
+  resolution: "@lwz/hive-service@workspace:packages/hive-service"
+  dependencies:
+    "@lwz/hive-meta-data": "workspace:packages/hive-meta-data"
+    "@lwz/hive-parser": "workspace:packages/hive-parser"
+    antlr4-c3: ^1.1.16
+    antlr4ts: ^0.5.0-alpha.4
+    fuzzysort: ^1.1.4
+    rimraf: ^3.0.2
   languageName: unknown
   linkType: soft
 
@@ -5283,10 +5295,10 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"monaco-editor-core@npm:0.26.0":
-  version: 0.26.0
-  resolution: "monaco-editor-core@npm:0.26.0"
-  checksum: a3e87d0b2aa02a8e3faf7661fa3359c0eb0245912bad0ae970ba5c0c0fe6b575d1ac91ce50bd6de0c885dd69e804a2374f9094ab59af75040acb6ff9586e09e1
+"monaco-editor-core@npm:^0.27.0":
+  version: 0.27.0
+  resolution: "monaco-editor-core@npm:0.27.0"
+  checksum: 3c1079d3851cbfd271c70254331131bab585a8c4fdde99f760948515f29fa250aff85a4678d061bc9f93e1a9efae0d442cf703a32c255a418ff76e40e8281bea
   languageName: node
   linkType: hard
 
