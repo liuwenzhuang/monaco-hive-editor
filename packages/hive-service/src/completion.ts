@@ -1,12 +1,13 @@
 import { HplsqlLexer } from '@lwz/hive-parser'
 import { CharStreams, CommonTokenStream, TokenStream } from 'antlr4ts'
-import { CodeCompletionCore, ScopedSymbol, SymbolTable, VariableSymbol } from 'antlr4-c3'
+import { CodeCompletionCore, SymbolTable, VariableSymbol } from 'antlr4-c3'
 import { ParseTree, TerminalNode } from 'antlr4ts/tree'
 import { SymbolTableVisitor } from './symbol-table-visitor'
-import { Symbol as ISymbol } from 'antlr4-c3/out/src/SymbolTable'
 import fuzzysort from 'fuzzysort'
 import { computeTokenPosition } from './compute-token-position'
-import { HplsqlParser, Table_nameContext } from '@lwz/hive-parser/lib/antlr4/HplsqlParser'
+import { HplsqlParser } from '@lwz/hive-parser/lib/antlr4/HplsqlParser'
+import { SymbolKind } from './language-support'
+import { FunctionKeywords } from '@lwz/hive-meta-data'
 
 export type CaretPosition = { line: number; column: number }
 export type TokenPosition = { index: number; context: ParseTree; text: string }
@@ -16,69 +17,34 @@ export type ComputeTokenPositionFunction = (
   caretPosition: CaretPosition
 ) => TokenPosition
 
-export function getScope(context: ParseTree, symbolTable: SymbolTable) {
-  if (!context) {
-    return undefined
-  }
-  const scope = symbolTable.symbolWithContext(context)
-  if (scope) {
-    return scope
-  } else {
-    return getScope(context.parent, symbolTable)
-  }
+interface CompletionItem {
+  label: string
+  kind: SymbolKind
+  insertText: string
+  detail?: string
+  documentation?: string
 }
 
-export function getAllSymbolsOfType<T extends ISymbol>(scope: ScopedSymbol, type: new (...args: any[]) => T): T[] {
-  const symbols = scope.getSymbolsOfType(type)
-  let parent = scope.parent
-  while (parent && !(parent instanceof ScopedSymbol)) {
-    parent = parent.parent
-  }
-  if (parent) {
-    symbols.push(...getAllSymbolsOfType(parent as ScopedSymbol, type))
-  }
-  return symbols
-}
-
-function suggestVariables(symbolTable: SymbolTable, position: TokenPosition) {
-  const context = position.context
-  const scope = getScope(context, symbolTable)
-  let symbols: ISymbol[]
-  if (scope instanceof ScopedSymbol) {
-    //Local scope
-    symbols = getAllSymbolsOfType(scope, VariableSymbol)
-  } else {
-    //Global scope
-    symbols = symbolTable.getSymbolsOfType(VariableSymbol)
-  }
-  let variable = position.context
-  while (!(variable instanceof Table_nameContext) && variable.parent) {
-    variable = variable.parent
-  }
-  return filterTokens(
-    variable ? position.text : '',
-    symbols.map((s) => s.name)
-  )
-}
-
-export function filterTokens_startsWith(text: string, candidates: string[]) {
+export function filterTokens_startsWith(text: string, candidates: CompletionItem[]) {
   if (text.trim().length == 0) {
     return candidates
   } else {
-    return candidates.filter((c) => c.toLowerCase().startsWith(text.toLowerCase()))
+    return candidates.filter((c) => c.label.toLowerCase().startsWith(text.toLowerCase()))
   }
 }
 
-export function filterTokens_fuzzySearch(text: string, candidates: string[]): string[] {
+export function filterTokens_fuzzySearch(text: string, candidates: CompletionItem[]): CompletionItem[] {
   if (text.trim().length == 0) {
     return candidates
   } else {
-    return fuzzysort.go(text, candidates).map((r) => r.target)
+    return fuzzysort.go<CompletionItem>(text, candidates, {
+      key: 'label',
+    }) as unknown as CompletionItem[]
   }
 }
 
 export let filterTokens = filterTokens_startsWith
-export function setTokenMatcher(fn: (text: string, candidates: string[]) => string[]) {
+export function setTokenMatcher(fn: (text: string, candidates: CompletionItem[]) => CompletionItem[]) {
   filterTokens = fn
 }
 
@@ -88,33 +54,112 @@ export function getSuggestionsForParseTree(
   symbolTableFn: () => SymbolTable,
   position: TokenPosition
 ) {
-  const core = new CodeCompletionCore(parser as any)
-  core.showResult = true
+  const core = new CodeCompletionCore(parser)
+  // core.showResult = true
 
-  const ignored = []
-  ignored.push(HplsqlParser.L_M_COMMENT, HplsqlParser.L_S_COMMENT)
+  const ignored = [
+    HplsqlLexer.EOF,
+    HplsqlLexer.T_PLUS,
+    HplsqlLexer.T_COLON,
+    HplsqlLexer.T_COMMA,
+    HplsqlLexer.T_PIPE,
+    HplsqlLexer.T_DIV,
+    HplsqlLexer.T_DOT,
+    HplsqlLexer.T_DOT2,
+    HplsqlLexer.T_EQUAL,
+    HplsqlLexer.T_EQUAL2,
+    HplsqlLexer.T_NOTEQUAL,
+    HplsqlLexer.T_NOTEQUAL2,
+    HplsqlLexer.T_GREATER,
+    HplsqlLexer.T_GREATEREQUAL,
+    HplsqlLexer.T_LESS,
+    HplsqlLexer.T_LESSEQUAL,
+    HplsqlLexer.T_MUL,
+    HplsqlLexer.T_OPEN_B,
+    HplsqlLexer.T_OPEN_P,
+    HplsqlLexer.T_OPEN_SB,
+    HplsqlLexer.T_CLOSE_B,
+    HplsqlLexer.T_CLOSE_P,
+    HplsqlLexer.T_CLOSE_SB,
+    HplsqlLexer.T_SEMICOLON,
+    HplsqlLexer.T_SUB,
+    HplsqlParser.L_M_COMMENT,
+    HplsqlParser.L_S_COMMENT,
+    HplsqlParser.L_S_STRING,
+    HplsqlParser.L_D_STRING,
+    HplsqlParser.L_INT,
+    HplsqlParser.L_DEC,
+    HplsqlParser.L_WS,
+    HplsqlParser.L_ID,
+    HplsqlParser.L_LABEL,
+    HplsqlParser.T_EXCLAMATION,
+    HplsqlParser.T_ADDRESS,
+    HplsqlParser.T_POUND,
+  ]
   core.ignoredTokens = new Set(ignored)
-  core.preferredRules = new Set([HplsqlParser.RULE_table_name])
+  core.preferredRules = new Set([
+    // HplsqlParser.RULE_select_stmt,
+    HplsqlParser.RULE_table_name,
+    // HplsqlParser.RULE_create_table_stmt,
+    // HplsqlParser.RULE_use_stmt,
+  ])
   const candidates = core.collectCandidates(position.index)
 
-  const completions: string[] = []
-  if (candidates.rules.has(HplsqlParser.RULE_table_name)) {
-    completions.push(...suggestVariables(symbolTableFn(), position))
-  }
-  const tokens = []
-  candidates.tokens.forEach((_, k) => {
-    const symbolicName = parser.vocabulary.getSymbolicName(k)
-    if (symbolicName) {
-      tokens.push(symbolicName.toLowerCase().slice(2))
+  const completions: CompletionItem[] = []
+
+  const symbolTable = symbolTableFn()
+  candidates.rules.forEach((_callStack, key) => {
+    switch (key) {
+      case HplsqlParser.RULE_table_name:
+        symbolTable.getAllSymbols(VariableSymbol).forEach((symbol) => {
+          completions.push({
+            label: symbol.name,
+            insertText: symbol.name,
+            kind: SymbolKind.Variable,
+            detail: 'Variable - Table Name',
+          })
+        })
+        break
+      default:
+        break
     }
   })
+
+  candidates.tokens.forEach((_, k) => {
+    let value = parser.vocabulary.getDisplayName(k)
+    if (value) {
+      if (value.startsWith('T_')) {
+        value = value.slice(2)
+      }
+      const valueFuncEntity = FunctionKeywords.find((item) => item.name.indexOf(value.toLowerCase()) !== -1)
+      if (valueFuncEntity) {
+        // function
+        const label = valueFuncEntity.name.toUpperCase()
+        completions.push({
+          label,
+          kind: SymbolKind.Function,
+          insertText: label + '()',
+          detail: valueFuncEntity.synax,
+          documentation: valueFuncEntity.desc,
+        })
+        if (label === value) {
+          return
+        }
+      }
+      // keywords
+      completions.push({
+        label: value,
+        kind: SymbolKind.Keyword,
+        insertText: value,
+        detail: 'Keywords',
+      })
+    }
+  })
+
   const isIgnoredToken = position.context instanceof TerminalNode && ignored.indexOf(position.context.symbol.type) >= 0
   const textToMatch = isIgnoredToken ? '' : position.text
-  completions.push(...filterTokens(textToMatch, tokens))
-  return completions.map((label) => ({
-    insertText: label,
-    label,
-  }))
+
+  return filterTokens(textToMatch, completions)
 }
 
 export function getSuggestions(code: string, caretPosition: CaretPosition) {

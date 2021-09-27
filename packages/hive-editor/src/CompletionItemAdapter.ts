@@ -1,3 +1,4 @@
+import { SymbolKind } from '@lwz/hive-service/lib/language-support'
 import * as monaco from 'monaco-editor-core'
 import { WorkerAccessor } from './index'
 
@@ -9,6 +10,7 @@ import Editor = monaco.editor
  */
 export interface UDCompletionItem extends Pick<Languages.CompletionItem, 'label' | 'detail' | 'documentation'> {
   label: string
+  kind?: number
 }
 
 export interface HiveCompletionItem extends Languages.CompletionItem {
@@ -67,13 +69,24 @@ export default class CompletionItemAdapter implements Languages.CompletionItemPr
         position,
         offset,
         range,
-        kind: Languages.CompletionItemKind.Variable,
+        kind: this.transferKind(item.kind),
         ...item,
       }
     })
 
     return {
       suggestions,
+    }
+  }
+
+  transferKind(kind: number) {
+    switch (kind) {
+      case SymbolKind.Function:
+        return Languages.CompletionItemKind.Function
+      case SymbolKind.Keyword:
+        return Languages.CompletionItemKind.Keyword
+      default:
+        return Languages.CompletionItemKind.Variable
     }
   }
 }

@@ -78,7 +78,7 @@ export class HiveWorker implements IHiveWorker {
         }
       }
     }
-    return Promise.resolve(getSuggestions(code, position))
+    return Promise.resolve(getSuggestions(code, position) as EnhanceCompletionItem[])
   }
 
   /**
