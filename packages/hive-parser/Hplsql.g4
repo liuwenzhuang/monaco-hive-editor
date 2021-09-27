@@ -371,7 +371,7 @@ alter_table_item :
      ;
 
 alter_table_add_constraint :
-       T_ADD2 (T_CONSTRAINT qident)? alter_table_add_constraint_item
+       T_ADD (T_CONSTRAINT qident)? alter_table_add_constraint_item
      ;
 
 alter_table_add_constraint_item :
@@ -1040,7 +1040,7 @@ bool_expr_binary_operator :
 expr :
        expr interval_item
      | expr (T_MUL | T_DIV) expr
-     | expr (T_ADD | T_SUB) expr
+     | expr (T_PLUS | T_SUB) expr
      | T_OPEN_P select_stmt T_CLOSE_P
      | T_OPEN_P expr T_CLOSE_P
      | expr_interval
@@ -1264,7 +1264,7 @@ null_const :                              // NULL constant
 non_reserved_words :                      // Tokens that are not reserved words and can be used as identifiers
        T_ACTION
      | T_ACTIVITY_COUNT
-     | T_ADD2
+     | T_ADD
      | T_ALL
      | T_ALLOCATE
      | T_ALTER
@@ -1593,7 +1593,7 @@ non_reserved_words :                      // Tokens that are not reserved words 
 
 // Lexer rules
 T_ACTION          : A C T I O N ;
-T_ADD2            : A D D ;
+T_ADD             : A D D ;
 T_ALL             : A L L ;
 T_ALLOCATE        : A L L O C A T E ;
 T_ALTER           : A L T E R ;
@@ -1935,7 +1935,7 @@ T_SYSDATE              : S Y S D A T E ;
 T_VARIANCE             : V A R I A N C E ;
 T_USER                 : U S E R;
 
-T_ADD          : '+' ;
+T_PLUS         : '+' ;
 T_COLON        : ':' ;
 T_COMMA        : ',' ;
 T_PIPE         : '||' ;
@@ -1959,6 +1959,9 @@ T_CLOSE_P      : ')' ;
 T_CLOSE_SB     : ']' ;
 T_SEMICOLON    : ';' ;
 T_SUB          : '-' ;
+T_EXCLAMATION  : '!' ;
+T_ADDRESS      : '@' ;
+T_POUND        : '#' ;
 
 L_ID        : L_ID_PART                                                // Identifier
             ;
