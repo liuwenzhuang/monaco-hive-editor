@@ -1,5 +1,5 @@
 import { LangError } from '@lwz/hive-parser/lib/error-listener'
-import { HiveParser, HplsqlParserNs } from '@lwz/hive-parser'
+import { HiveParser, ProgramContext } from '@lwz/hive-parser'
 import { UDCompletionItem } from './CompletionItemAdapter'
 
 export default class HiveLanguageService {
@@ -9,7 +9,7 @@ export default class HiveLanguageService {
   }
 
   parse(code: string) {
-    const ast: HplsqlParserNs.ProgramContext = this.parser.parseAndGetASTRoot(code)
+    const ast: ProgramContext = this.parser.parseAndGetASTRoot(code)
     return ast
   }
 

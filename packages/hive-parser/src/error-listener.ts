@@ -9,7 +9,7 @@ export interface LangError {
   code: string
 }
 
-export default class ErrorListener implements ANTLRErrorListener<any> {
+export class HiveErrorListener implements ANTLRErrorListener<any> {
   private errors: LangError[] = []
   syntaxError(
     recognizer: Recognizer<any, any>,

@@ -1962,6 +1962,7 @@ T_SUB          : '-' ;
 T_EXCLAMATION  : '!' ;
 T_ADDRESS      : '@' ;
 T_POUND        : '#' ;
+T_MOD          : '%' ;
 
 L_ID        : L_ID_PART                                                // Identifier
             ;

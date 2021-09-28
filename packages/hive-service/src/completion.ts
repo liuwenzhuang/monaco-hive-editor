@@ -1,11 +1,10 @@
-import { HplsqlLexer } from '@lwz/hive-parser'
+import { HplsqlLexer, HplsqlParser } from '@lwz/hive-parser'
 import { CharStreams, CommonTokenStream, TokenStream } from 'antlr4ts'
 import { CodeCompletionCore, SymbolTable, VariableSymbol } from 'antlr4-c3'
 import { ParseTree, TerminalNode } from 'antlr4ts/tree'
 import { SymbolTableVisitor } from './symbol-table-visitor'
 import fuzzysort from 'fuzzysort'
 import { computeTokenPosition } from './compute-token-position'
-import { HplsqlParser } from '@lwz/hive-parser/lib/antlr4/HplsqlParser'
 import { SymbolKind } from './language-support'
 import { FunctionKeywords } from '@lwz/hive-meta-data'
 
@@ -83,6 +82,7 @@ export function getSuggestionsForParseTree(
     HplsqlLexer.T_CLOSE_SB,
     HplsqlLexer.T_SEMICOLON,
     HplsqlLexer.T_SUB,
+    HplsqlParser.T_MOD,
     HplsqlParser.L_M_COMMENT,
     HplsqlParser.L_S_COMMENT,
     HplsqlParser.L_S_STRING,

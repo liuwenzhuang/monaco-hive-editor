@@ -1,8 +1,6 @@
-import HiveParser from './parser'
-import HiveErrorListener from './error-listener'
-import { HplsqlLexer } from './antlr4/HplsqlLexer'
-import * as HplsqlParserNs from './antlr4/HplsqlParser'
-import { HplsqlVisitor } from './antlr4/HplsqlVisitor'
-import { HplsqlListener } from './antlr4/HplsqlListener'
-
-export { HiveParser, HiveErrorListener, HplsqlLexer, HplsqlParserNs, HplsqlVisitor, HplsqlListener }
+export * from './parser'
+export * from './error-listener'
+export * from './antlr4/HplsqlLexer'
+export * from './antlr4/HplsqlParser'
+export * from './antlr4/HplsqlVisitor'
+export * from './antlr4/HplsqlListener'
