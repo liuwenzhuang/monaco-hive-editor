@@ -131,21 +131,6 @@ export function getSuggestionsForParseTree(
       if (value.startsWith('T_')) {
         value = value.slice(2)
       }
-      const valueFuncEntity = FunctionKeywords.find((item) => item.name.indexOf(value.toLowerCase()) !== -1)
-      if (valueFuncEntity) {
-        // function
-        const label = valueFuncEntity.name.toUpperCase()
-        completions.push({
-          label,
-          kind: SymbolKind.Function,
-          insertText: label + '()',
-          detail: valueFuncEntity.synax,
-          documentation: valueFuncEntity.desc,
-        })
-        if (label === value) {
-          return
-        }
-      }
       // keywords
       completions.push({
         label: value,
@@ -155,6 +140,20 @@ export function getSuggestionsForParseTree(
       })
     }
   })
+
+  // functions
+  const functions = FunctionKeywords.map<CompletionItem>((item) => {
+    const label = item.name.toUpperCase()
+    return {
+      label,
+      kind: SymbolKind.Function,
+      insertText: `${label}()`,
+      detail: item.synax,
+      documentation: item.desc,
+    }
+  })
+
+  completions.push(...functions)
 
   const isIgnoredToken = position.context instanceof TerminalNode && ignored.indexOf(position.context.symbol.type) >= 0
   const textToMatch = isIgnoredToken ? '' : position.text
