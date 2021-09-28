@@ -1,7 +1,7 @@
 import { HplsqlVisitor } from '@lwz/hive-parser'
 import { Symbol as CSymbol, SymbolTable, VariableSymbol } from 'antlr4-c3'
 import { AbstractParseTreeVisitor, ParseTree } from 'antlr4ts/tree'
-import { Create_table_stmtContext, Table_nameContext } from '@lwz/hive-parser/lib/antlr4/HplsqlParser'
+import { Table_nameContext } from '@lwz/hive-parser/lib/antlr4/HplsqlParser'
 
 export class SymbolTableVisitor extends AbstractParseTreeVisitor<SymbolTable> implements HplsqlVisitor<SymbolTable> {
   private symbolStack: CSymbol[] = []
@@ -36,16 +36,6 @@ export class SymbolTableVisitor extends AbstractParseTreeVisitor<SymbolTable> im
       }
     }
     return null
-  }
-
-  visitCreate_table_stmt(ctx: Create_table_stmtContext) {
-    // 将新建的表名，加到 symbolTable 中
-    this.symbolTable.addNewSymbolOfType(VariableSymbol, null, ctx.table_name().text)
-    if (ctx.T_IF()) {
-      this.symbolTable.addNewSymbolOfType(VariableSymbol, null, 'if not exists')
-    }
-    const tmp = this.symbolTable.getSymbolsOfType(VariableSymbol)
-    return this.visitChildren(ctx)
   }
 
   /**
