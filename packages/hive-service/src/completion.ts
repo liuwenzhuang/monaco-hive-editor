@@ -1,14 +1,23 @@
-import { HplsqlLexer, HplsqlParser } from '@lwz/hive-parser'
-import { CharStreams, CommonTokenStream, TokenStream } from 'antlr4ts'
+import { Create_table_stmtContext, Drop_stmtContext, HplsqlLexer, HplsqlParser } from '@lwz/hive-parser'
+import { CharStreams, CommonTokenStream, Token, TokenStream } from 'antlr4ts'
 import { CodeCompletionCore, SymbolTable, VariableSymbol } from 'antlr4-c3'
 import { ParseTree, TerminalNode } from 'antlr4ts/tree'
 import { SymbolTableVisitor } from './symbol-table-visitor'
 import fuzzysort from 'fuzzysort'
-import { computeTokenPosition } from './compute-token-position'
+import { computeTokenPosition, getTokensBeforePosition } from './compute-token-position'
 import { SymbolKind } from './language-support'
 import { FunctionKeywords } from '@lwz/hive-meta-data'
 
-export type CaretPosition = { line: number; column: number }
+export interface CaretPosition {
+  /**
+   * vscode 提供的行，从 1 开始
+   */
+  line: number
+  /**
+   * vscode 提供的列，从 1 开始
+   */
+  column: number
+}
 export type TokenPosition = { index: number; context: ParseTree; text: string }
 export type ComputeTokenPositionFunction = (
   parseTree: ParseTree,
@@ -22,6 +31,7 @@ interface CompletionItem {
   insertText: string
   detail?: string
   documentation?: string
+  sortText?: string
 }
 
 export function filterTokens_startsWith(text: string, candidates: CompletionItem[]) {
@@ -47,9 +57,27 @@ export function setTokenMatcher(fn: (text: string, candidates: CompletionItem[])
   filterTokens = fn
 }
 
+/**
+ * 检查当前 parseTree 是否存在于需要标明的 rule 中
+ * @param parseTree
+ * @returns
+ */
+function checkShouldInsertTable(parseTree: ParseTree) {
+  let variable = parseTree
+  while (variable) {
+    const containTable = [Drop_stmtContext, Create_table_stmtContext].some((item) => variable instanceof item)
+    if (containTable) {
+      return true
+    }
+    variable = variable.parent
+  }
+  return false
+}
+
 export function getSuggestionsForParseTree(
   parser: HplsqlParser,
   parseTree: ParseTree,
+  tokens: Token[],
   symbolTableFn: () => SymbolTable,
   position: TokenPosition
 ) {
@@ -100,6 +128,8 @@ export function getSuggestionsForParseTree(
   core.preferredRules = new Set([
     // HplsqlParser.RULE_select_stmt,
     HplsqlParser.RULE_table_name,
+    HplsqlParser.RULE_ifNotExistsSuggest,
+    HplsqlParser.RULE_ifExistsSuggest,
     // HplsqlParser.RULE_create_table_stmt,
     // HplsqlParser.RULE_use_stmt,
   ])
@@ -107,53 +137,78 @@ export function getSuggestionsForParseTree(
 
   const completions: CompletionItem[] = []
 
-  const symbolTable = symbolTableFn()
+  // 是否忽略其他的提示侯选者
+  let ignoreOtherCandidates = false
+
+  if (candidates.rules.has(HplsqlParser.RULE_table_name) && checkShouldInsertTable(position.context)) {
+    const symbolTable = symbolTableFn()
+    symbolTable.getAllSymbols(VariableSymbol).forEach((symbol) => {
+      completions.push({
+        label: symbol.name,
+        insertText: symbol.name,
+        kind: SymbolKind.Variable,
+        detail: 'Variable - Table Name',
+      })
+    })
+  }
   candidates.rules.forEach((_callStack, key) => {
     switch (key) {
-      case HplsqlParser.RULE_table_name:
-        symbolTable.getAllSymbols(VariableSymbol).forEach((symbol) => {
-          completions.push({
-            label: symbol.name,
-            insertText: symbol.name,
-            kind: SymbolKind.Variable,
-            detail: 'Variable - Table Name',
-          })
+      case HplsqlParser.RULE_ifNotExistsSuggest:
+        completions.push({
+          label: 'IF NOT EXISTS',
+          insertText: 'IF NOT EXISTS',
+          kind: SymbolKind.StringLiteral,
+          detail: 'Literal - Keywords',
+          sortText: 'a',
         })
+        ignoreOtherCandidates = true
+        break
+      case HplsqlParser.RULE_ifExistsSuggest:
+        completions.push({
+          label: 'IF EXISTS',
+          insertText: 'IF EXISTS',
+          kind: SymbolKind.StringLiteral,
+          detail: 'Literal - Keywords',
+          sortText: 'a',
+        })
+        ignoreOtherCandidates = true
         break
       default:
         break
     }
   })
 
-  candidates.tokens.forEach((_, k) => {
-    let value = parser.vocabulary.getDisplayName(k)
-    if (value) {
-      if (value.startsWith('T_')) {
-        value = value.slice(2)
+  if (!ignoreOtherCandidates) {
+    candidates.tokens.forEach((_, k) => {
+      let value = parser.vocabulary.getDisplayName(k)
+      if (value) {
+        if (value.startsWith('T_')) {
+          value = value.slice(2)
+        }
+        // keywords
+        completions.push({
+          label: value,
+          kind: SymbolKind.Keyword,
+          insertText: value,
+          detail: 'Keywords',
+        })
       }
-      // keywords
-      completions.push({
-        label: value,
-        kind: SymbolKind.Keyword,
-        insertText: value,
-        detail: 'Keywords',
-      })
-    }
-  })
+    })
 
-  // functions
-  const functions = FunctionKeywords.map<CompletionItem>((item) => {
-    const label = item.name.toUpperCase()
-    return {
-      label,
-      kind: SymbolKind.Function,
-      insertText: `${label}()`,
-      detail: item.synax,
-      documentation: item.desc,
-    }
-  })
+    // functions
+    const functions = FunctionKeywords.map<CompletionItem>((item) => {
+      const label = item.name.toUpperCase()
+      return {
+        label,
+        kind: SymbolKind.Function,
+        insertText: `${label}()`,
+        detail: item.synax,
+        documentation: item.desc,
+      }
+    })
 
-  completions.push(...functions)
+    completions.push(...functions)
+  }
 
   const isIgnoredToken = position.context instanceof TerminalNode && ignored.indexOf(position.context.symbol.type) >= 0
   const textToMatch = isIgnoredToken ? '' : position.text
@@ -169,9 +224,17 @@ export function getSuggestions(code: string, caretPosition: CaretPosition) {
 
   const parseTree = parser.program()
 
+  const tokens = getTokensBeforePosition(tokenStream, caretPosition)
+
   const position = computeTokenPosition(parseTree, tokenStream, caretPosition)
   if (!position) {
     return []
   }
-  return getSuggestionsForParseTree(parser, parseTree, () => new SymbolTableVisitor().visit(parseTree), position)
+  return getSuggestionsForParseTree(
+    parser,
+    parseTree,
+    tokens,
+    () => new SymbolTableVisitor().visit(parseTree),
+    position
+  )
 }
