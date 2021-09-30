@@ -29,6 +29,7 @@
     "download": "curl -L -o ./OriginalHplsql.g4 https://raw.githubusercontent.com/apache/hive/master/hplsql/src/main/antlr4/org/apache/hive/hplsql/Hplsql.g4",
     "antlr4ts": "antlr4ts -visitor ./Hplsql.g4 -o ./src/antlr4",
     "build": "tsc",
+    "build:grammar": "yarn antlr4ts && yarn build",
     "prepare": "rimraf lib && yarn build"
   },
   "devDependencies": {

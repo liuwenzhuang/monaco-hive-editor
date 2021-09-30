@@ -226,7 +226,7 @@ declare_temporary_table_item :     // DECLARE TEMPORARY TABLE statement
      ;
 
 create_table_stmt :
-       T_CREATE T_TABLE (T_IF T_NOT T_EXISTS)? table_name create_table_preoptions? create_table_definition
+       T_CREATE T_TABLE ifNotExistsSuggest (T_IF T_NOT T_EXISTS)? table_name create_table_preoptions? create_table_definition
      ;
 
 create_local_temp_table_stmt :
@@ -437,8 +437,11 @@ dtype_default :
      ;
 
 create_database_stmt :
-      T_CREATE (T_DATABASE | T_SCHEMA) (T_IF T_NOT T_EXISTS)? expr create_database_option*
+      T_CREATE (T_DATABASE | T_SCHEMA) ifNotExistsSuggest (T_IF T_NOT T_EXISTS)? expr create_database_option*
     ;
+
+ifNotExistsSuggest : ; // for suggestion
+ifExistsSuggest : ; // for suggestion
 
 create_database_option :
       T_COMMENT expr
@@ -510,10 +513,10 @@ create_routine_option :
      ;
 
 drop_stmt :             // DROP statement
-       T_DROP T_TABLE (T_IF T_EXISTS)? table_name
-     | T_DROP T_PACKAGE (T_IF T_EXISTS)? ident
-     | T_DROP (T_PROCEDURE | T_FUNCTION) (T_IF T_EXISTS)? ident
-     | T_DROP (T_DATABASE | T_SCHEMA) (T_IF T_EXISTS)? expr
+       T_DROP T_TABLE ifExistsSuggest (T_IF T_EXISTS)? table_name
+     | T_DROP T_PACKAGE ifExistsSuggest (T_IF T_EXISTS)? ident
+     | T_DROP (T_PROCEDURE | T_FUNCTION) ifExistsSuggest (T_IF T_EXISTS)? ident
+     | T_DROP (T_DATABASE | T_SCHEMA) ifExistsSuggest (T_IF T_EXISTS)? expr
      ;
 
 end_transaction_stmt :

@@ -73,6 +73,8 @@ import { Dtype_lenContext } from "./HplsqlParser";
 import { Dtype_attrContext } from "./HplsqlParser";
 import { Dtype_defaultContext } from "./HplsqlParser";
 import { Create_database_stmtContext } from "./HplsqlParser";
+import { IfNotExistsSuggestContext } from "./HplsqlParser";
+import { IfExistsSuggestContext } from "./HplsqlParser";
 import { Create_database_optionContext } from "./HplsqlParser";
 import { Create_function_stmtContext } from "./HplsqlParser";
 import { Create_function_returnContext } from "./HplsqlParser";
@@ -744,6 +746,20 @@ export interface HplsqlVisitor<Result> extends ParseTreeVisitor<Result> {
 	 * @return the visitor result
 	 */
 	visitCreate_database_stmt?: (ctx: Create_database_stmtContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by `HplsqlParser.ifNotExistsSuggest`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitIfNotExistsSuggest?: (ctx: IfNotExistsSuggestContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by `HplsqlParser.ifExistsSuggest`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitIfExistsSuggest?: (ctx: IfExistsSuggestContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `HplsqlParser.create_database_option`.
