@@ -21,7 +21,8 @@
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-unused-imports": "^1.1.3",
-    "prettier": "^2.3.2"
+    "prettier": "^2.3.2",
+    "typescript": "^4.6.2"
   },
   "resolutions": {
     "antlr4ts": "0.5.0-alpha.4",
