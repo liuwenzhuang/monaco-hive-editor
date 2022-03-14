@@ -1,6 +1,7 @@
 import { LangError } from '@lwz/hive-parser/lib/error-listener'
 import { HiveParser, ProgramContext } from '@lwz/hive-parser'
 import { UDCompletionItem } from './CompletionItemAdapter'
+import { EnhanceCompletionItem } from './HiveWorker'
 
 export default class HiveLanguageService {
   private parser: HiveParser
@@ -30,7 +31,7 @@ export default class HiveLanguageService {
     return result
   }
 
-  getTableByDb(url: string, db: string): Promise<UDCompletionItem[]> {
+  getTableByDb(url: string, db: string): Promise<EnhanceCompletionItem[]> {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest()
       xhr.onreadystatechange = function () {
@@ -39,7 +40,13 @@ export default class HiveLanguageService {
             if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
               // 请求正常
               const res = JSON.parse(xhr.responseText)
-              resolve(res?.data)
+              const data: UDCompletionItem[] = res?.data ?? []
+              resolve(
+                data.map<EnhanceCompletionItem>((item) => ({
+                  ...item,
+                  insertText: item.label,
+                }))
+              )
             } else {
               // 请求异常
               reject(xhr)

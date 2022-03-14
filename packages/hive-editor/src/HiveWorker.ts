@@ -8,7 +8,7 @@ import { UDCompletionItem } from './CompletionItemAdapter'
 import { CompletionsOptions, HiveWorker as IHiveWorker } from './monaco.contribution'
 import { CaretPosition, getSuggestions } from '@lwz/hive-service'
 
-interface EnhanceCompletionItem extends UDCompletionItem {
+export interface EnhanceCompletionItem extends UDCompletionItem {
   insertText: Languages.CompletionItem['insertText']
 }
 
@@ -33,7 +33,7 @@ export class HiveWorker implements IHiveWorker {
     return Promise.resolve(this.languageService.validate(code))
   }
 
-  getCompletionsAtPosition(
+  async getCompletionsAtPosition(
     fileName: string,
     offset: number,
     position: CaretPosition
@@ -58,27 +58,19 @@ export class HiveWorker implements IHiveWorker {
       }))
       return Promise.resolve(suggestions)
     }
-    if (charAtOffset === '.') {
-      const word = this.languageService.getWordBefore(code, offset - 1)
-      if (this.dataBases.some((database) => database.label === word)) {
-        const tableReqUrl = this.createData.tableReqUrl
-        if (tableReqUrl) {
-          return this.languageService
-            .getTableByDb(tableReqUrl, word)
-            .then((list) => {
-              return list.map((item) => ({
-                ...item,
-                insertText: item.label,
-              }))
-            })
-            .catch(() => {
-              // ignore err
-              return []
-            })
-        }
-      }
+
+    const extraOption = {
+      tableReqCb: this.languageService.getTableByDb.bind(this, this.createData.tableReqUrl),
+      dbReqCb: () =>
+        Promise.resolve(
+          this.dataBases.map<any>((item) => ({
+            ...item,
+            insertText: item.label,
+          }))
+        ),
     }
-    return Promise.resolve(getSuggestions(code, position) as EnhanceCompletionItem[])
+    const result = await getSuggestions(code, position, extraOption)
+    return result as unknown as Promise<EnhanceCompletionItem[]>
   }
 
   /**

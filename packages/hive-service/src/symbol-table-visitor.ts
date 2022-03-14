@@ -1,12 +1,11 @@
 import { HplsqlVisitor } from '@lwz/hive-parser'
 import { Symbol as CSymbol, SymbolTable, VariableSymbol } from 'antlr4-c3'
 import { AbstractParseTreeVisitor, ParseTree } from 'antlr4ts/tree'
-import { Table_nameContext } from '@lwz/hive-parser/lib/antlr4/HplsqlParser'
+import { Table_nameContext, Use_stmtContext } from '@lwz/hive-parser/lib/antlr4/HplsqlParser'
+import { UseSymbol } from './symbols/TopSymols'
 
 export class SymbolTableVisitor extends AbstractParseTreeVisitor<SymbolTable> implements HplsqlVisitor<SymbolTable> {
-  constructor(
-    private symbolTable: SymbolTable = new SymbolTable('Hplsql', {})
-  ) {
+  constructor(private symbolTable: SymbolTable = new SymbolTable('Hplsql', {})) {
     super()
   }
 
@@ -34,6 +33,14 @@ export class SymbolTableVisitor extends AbstractParseTreeVisitor<SymbolTable> im
         // 未被添加过
         this.addNewSymbol(ctx, VariableSymbol, table)
       }
+    }
+    return null
+  }
+
+  visitUse_stmt(ctx: Use_stmtContext) {
+    const dbOrSchema = ctx.expr()
+    if (dbOrSchema) {
+      this.addNewSymbol(ctx, UseSymbol, dbOrSchema.text)
     }
     return null
   }

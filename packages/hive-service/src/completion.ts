@@ -1,12 +1,14 @@
+/* eslint-disable no-case-declarations */
 import { Create_table_stmtContext, Drop_stmtContext, HplsqlLexer, HplsqlParser } from '@lwz/hive-parser'
 import { CharStreams, CommonTokenStream, Token, TokenStream } from 'antlr4ts'
-import { CodeCompletionCore, SymbolTable, VariableSymbol } from 'antlr4-c3'
+import { CodeCompletionCore, SymbolTable } from 'antlr4-c3'
 import { ParseTree, TerminalNode } from 'antlr4ts/tree'
 import { SymbolTableVisitor } from './symbol-table-visitor'
 import fuzzysort from 'fuzzysort'
 import { computeTokenPosition, getTokensBeforePosition } from './compute-token-position'
 import { SymbolKind } from './language-support'
 import { FunctionKeywords } from '@lwz/hive-meta-data'
+import { UseSymbol } from './symbols/TopSymols'
 
 export interface CaretPosition {
   /**
@@ -79,7 +81,8 @@ export function getSuggestionsForParseTree(
   parseTree: ParseTree,
   tokens: Token[],
   symbolTableFn: () => SymbolTable,
-  position: TokenPosition
+  position: TokenPosition,
+  extraOption: ExtraOption
 ) {
   const core = new CodeCompletionCore(parser)
   // core.showResult = true
@@ -140,19 +143,32 @@ export function getSuggestionsForParseTree(
   // 是否忽略其他的提示侯选者
   let ignoreOtherCandidates = false
 
-  if (candidates.rules.has(HplsqlParser.RULE_table_name) && checkShouldInsertTable(position.context)) {
+  if (candidates.rules.has(HplsqlParser.RULE_table_name)) {
     const symbolTable = symbolTableFn()
-    symbolTable.getAllSymbols(VariableSymbol).forEach((symbol) => {
-      completions.push({
-        label: symbol.name,
-        insertText: symbol.name,
-        kind: SymbolKind.Variable,
-        detail: 'Variable - Table Name',
-      })
-    })
+    const dbSchemaList = symbolTable.getSymbolsOfType(UseSymbol)
+    const lastDbSchema = dbSchemaList ? dbSchemaList[dbSchemaList.length - 1] : undefined
+    const curToken = tokens[tokens.length - 1]
+    if (curToken?.type === HplsqlLexer.T_DOT) {
+      // 处理 "db." 的情况
+      const prevToken = tokens[tokens.length - 2]
+      if (prevToken) {
+        return extraOption?.tableReqCb?.(prevToken.text)
+      }
+    }
+    if (!lastDbSchema) {
+      // 提示库
+      return extraOption?.dbReqCb?.()
+    } else {
+      // 提示 库下表
+      return extraOption?.tableReqCb?.(lastDbSchema.name)
+    }
   }
+
   candidates.rules.forEach((_callStack, key) => {
     switch (key) {
+      case HplsqlParser.RULE_table_name:
+        ignoreOtherCandidates = true
+        break
       case HplsqlParser.RULE_ifNotExistsSuggest:
         completions.push({
           label: 'IF NOT EXISTS',
@@ -213,10 +229,15 @@ export function getSuggestionsForParseTree(
   const isIgnoredToken = position.context instanceof TerminalNode && ignored.indexOf(position.context.symbol.type) >= 0
   const textToMatch = isIgnoredToken ? '' : position.text
 
-  return filterTokens(textToMatch, completions)
+  return Promise.resolve(filterTokens(textToMatch, completions))
 }
 
-export function getSuggestions(code: string, caretPosition: CaretPosition) {
+interface ExtraOption {
+  tableReqCb: (dbSchema: string) => Promise<CompletionItem[]>
+  dbReqCb: () => Promise<CompletionItem[]>
+}
+
+export function getSuggestions(code: string, caretPosition: CaretPosition, extraOption: ExtraOption) {
   const input = CharStreams.fromString(code)
   const lexer = new HplsqlLexer(input)
   const tokenStream = new CommonTokenStream(lexer)
@@ -235,6 +256,7 @@ export function getSuggestions(code: string, caretPosition: CaretPosition) {
     parseTree,
     tokens,
     () => new SymbolTableVisitor().visit(parseTree),
-    position
+    position,
+    extraOption
   )
 }
