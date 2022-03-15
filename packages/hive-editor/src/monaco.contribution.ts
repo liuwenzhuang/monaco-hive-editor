@@ -19,6 +19,11 @@ export interface CompletionsOptions {
    */
   tableReqUrl?: string
   /**
+   * get columns by db name and table name, return data type:
+   * {data: UDCompletionItem[]}
+   */
+  columnReqUrl?: string
+  /**
    * whether support test databse grammar
    * ${!DB}.TABLE
    */
@@ -202,6 +207,7 @@ export const hiveDefaults: LanguageServiceDefaults = new LanguageServiceDefaults
     dataBases: [{ label: 'test1DB', detail: '测试数据库1' }, { label: 'testDB2' }],
     noTestDataBase: false,
     tableReqUrl: 'http://127.0.0.1:3001/getDbTables',
+    columnReqUrl: 'http://127.0.0.1:3001/getColumns',
   },
   {},
   {}

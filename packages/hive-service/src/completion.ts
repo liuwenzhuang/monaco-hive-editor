@@ -1,14 +1,14 @@
 /* eslint-disable no-case-declarations */
-import { Create_table_stmtContext, Drop_stmtContext, HplsqlLexer, HplsqlParser } from '@lwz/hive-parser'
+import { Create_table_stmtContext, Drop_stmtContext, HplsqlLexer, HplsqlParser, QidentContext } from '@lwz/hive-parser'
 import { CharStreams, CommonTokenStream, Token, TokenStream } from 'antlr4ts'
 import { CodeCompletionCore, SymbolTable } from 'antlr4-c3'
 import { ParseTree, TerminalNode } from 'antlr4ts/tree'
 import { SymbolTableVisitor } from './symbol-table-visitor'
 import fuzzysort from 'fuzzysort'
-import { computeTokenPosition, getTokensBeforePosition } from './compute-token-position'
+import { computeTokenPosition, getTokensAfterPosition, getTokensBeforePosition } from './compute-token-position'
 import { SymbolKind } from './language-support'
 import { FunctionKeywords } from '@lwz/hive-meta-data'
-import { UseSymbol } from './symbols/TopSymols'
+import { TableSymbol, UseSymbol } from './symbols/TopSymols'
 
 export interface CaretPosition {
   /**
@@ -79,7 +79,7 @@ function checkShouldInsertTable(parseTree: ParseTree) {
 export function getSuggestionsForParseTree(
   parser: HplsqlParser,
   parseTree: ParseTree,
-  tokens: Token[],
+  [prevTokens, postTokens, tokens]: [Token[], Token[], Token[]],
   symbolTableFn: () => SymbolTable,
   position: TokenPosition,
   extraOption: ExtraOption
@@ -133,6 +133,7 @@ export function getSuggestionsForParseTree(
     HplsqlParser.RULE_table_name,
     HplsqlParser.RULE_ifNotExistsSuggest,
     HplsqlParser.RULE_ifExistsSuggest,
+    HplsqlParser.RULE_select_list,
     // HplsqlParser.RULE_create_table_stmt,
     // HplsqlParser.RULE_use_stmt,
   ])
@@ -143,14 +144,15 @@ export function getSuggestionsForParseTree(
   // 是否忽略其他的提示侯选者
   let ignoreOtherCandidates = false
 
+  const symbolTable = symbolTableFn()
+
   if (candidates.rules.has(HplsqlParser.RULE_table_name)) {
-    const symbolTable = symbolTableFn()
     const dbSchemaList = symbolTable.getSymbolsOfType(UseSymbol)
     const lastDbSchema = dbSchemaList ? dbSchemaList[dbSchemaList.length - 1] : undefined
-    const curToken = tokens[tokens.length - 1]
+    const curToken = prevTokens[prevTokens.length - 1]
     if (curToken?.type === HplsqlLexer.T_DOT) {
       // 处理 "db." 的情况
-      const prevToken = tokens[tokens.length - 2]
+      const prevToken = prevTokens[prevTokens.length - 2]
       if (prevToken) {
         return extraOption?.tableReqCb?.(prevToken.text)
       }
@@ -164,9 +166,23 @@ export function getSuggestionsForParseTree(
     }
   }
 
+  if (candidates.rules.has(HplsqlParser.RULE_select_list)) {
+    const tableList = symbolTable.getSymbolsOfType(TableSymbol)
+    const startToken = postTokens[0]
+    const endToken = postTokens[postTokens.length - 1]
+    const firstTable = tableList.find((table) => {
+      const context = table.context as QidentContext
+      const tokenIndex = context.stop.tokenIndex
+      return tokenIndex >= startToken.tokenIndex && tokenIndex <= endToken.tokenIndex
+    })
+    if (firstTable) {
+      return extraOption?.columnReqCb?.(firstTable.db, firstTable.name)
+    }
+  }
+
   candidates.rules.forEach((_callStack, key) => {
     switch (key) {
-      case HplsqlParser.RULE_table_name:
+      case HplsqlParser.RULE_select_list:
         ignoreOtherCandidates = true
         break
       case HplsqlParser.RULE_ifNotExistsSuggest:
@@ -233,8 +249,9 @@ export function getSuggestionsForParseTree(
 }
 
 interface ExtraOption {
-  tableReqCb: (dbSchema: string) => Promise<CompletionItem[]>
   dbReqCb: () => Promise<CompletionItem[]>
+  tableReqCb: (dbSchema: string) => Promise<CompletionItem[]>
+  columnReqCb: (dbSchema: string, table: string) => Promise<CompletionItem[]>
 }
 
 export function getSuggestions(code: string, caretPosition: CaretPosition, extraOption: ExtraOption) {
@@ -242,20 +259,22 @@ export function getSuggestions(code: string, caretPosition: CaretPosition, extra
   const lexer = new HplsqlLexer(input)
   const tokenStream = new CommonTokenStream(lexer)
   const parser = new HplsqlParser(tokenStream)
+  parser.removeErrorListeners()
 
   const parseTree = parser.program()
 
-  const tokens = getTokensBeforePosition(tokenStream, caretPosition)
+  const prevTokens = getTokensBeforePosition(tokenStream, caretPosition)
+  const postTokens = getTokensAfterPosition(tokenStream, caretPosition)
 
   const position = computeTokenPosition(parseTree, tokenStream, caretPosition)
   if (!position) {
-    return []
+    return Promise.resolve([])
   }
   return getSuggestionsForParseTree(
     parser,
     parseTree,
-    tokens,
-    () => new SymbolTableVisitor().visit(parseTree),
+    [prevTokens, postTokens, tokenStream.getTokens()],
+    () => new SymbolTableVisitor(parser).visit(parseTree),
     position,
     extraOption
   )

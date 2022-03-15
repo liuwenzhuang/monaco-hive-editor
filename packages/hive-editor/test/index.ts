@@ -11,8 +11,9 @@ function onDOMContentLoaded() {
     value: [
       'use mammut_idc;',
       '-- set hive.execution.engine=spark;',
-      'select count(*) from (select * from src) A left join (select * from src) B on A.key = B.key;',
-      'create table students(id int, age char(2));',
+      'select count(*) from (select * from tableA) A left join (select * from tableB) B on A.key = B.key;',
+      'create table mammut_qa.students(id int, age char(2));',
+      'select from testTable1;',
     ].join('\n'),
   })
 
@@ -27,6 +28,8 @@ function onBtnGroupClick(e: Event) {
       editorInstance.setCompletionsOptions({
         azkabanKeywords: [{ label: 'az.1.day.ago', detail: '一天前' }],
         noTestDataBase: true,
+        dataBases: [{ label: 'test1DB', detail: '测试数据库1' }, { label: 'testDB2' }],
+        tableReqUrl: 'http://127.0.0.1:3001/getDbTables',
       })
       break
     case 'getSelectedValue':

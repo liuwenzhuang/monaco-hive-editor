@@ -1,11 +1,17 @@
 import { HplsqlVisitor } from '@lwz/hive-parser'
-import { Symbol as CSymbol, SymbolTable, VariableSymbol } from 'antlr4-c3'
+import { Symbol as CSymbol, SymbolTable } from 'antlr4-c3'
 import { AbstractParseTreeVisitor, ParseTree } from 'antlr4ts/tree'
-import { Table_nameContext, Use_stmtContext } from '@lwz/hive-parser/lib/antlr4/HplsqlParser'
-import { UseSymbol } from './symbols/TopSymols'
+import {
+  HplsqlParser,
+  Table_nameContext,
+  Use_stmtContext,
+  Select_list_itemContext,
+  QidentContext,
+} from '@lwz/hive-parser/lib/antlr4/HplsqlParser'
+import { TableSymbol, UseSymbol } from './symbols/TopSymols'
 
 export class SymbolTableVisitor extends AbstractParseTreeVisitor<SymbolTable> implements HplsqlVisitor<SymbolTable> {
-  constructor(private symbolTable: SymbolTable = new SymbolTable('Hplsql', {})) {
+  constructor(private parser: HplsqlParser, private symbolTable: SymbolTable = new SymbolTable('Hplsql', {})) {
     super()
   }
 
@@ -13,27 +19,49 @@ export class SymbolTableVisitor extends AbstractParseTreeVisitor<SymbolTable> im
     return this.symbolTable
   }
 
-  visitTable_name(ctx: Table_nameContext) {
-    let table: string
-    if (ctx.qident !== null) {
-      const idents = ctx.qident().ident()
-      const len = idents.length
-      if (len === 1) {
-        table = idents[0].text
-      }
-      if (len === 2) {
-        // db.tbl or tbl.col
-        table = idents[1].text
-      }
-      if (len === 3) {
-        // db.tbl.col
-        table = idents[1].text
-      }
-      if (!this.symbolTable.resolve(table)) {
-        // 未被添加过
-        this.addNewSymbol(ctx, VariableSymbol, table)
-      }
+  private handleQident(ctx: QidentContext) {
+    if (!ctx) {
+      return
     }
+    const idents = ctx.ident()
+    const len = idents.length
+    if (len === 1) {
+      // 只有表
+      const useSymbols = this.symbolTable.getSymbolsOfType(UseSymbol)
+      let cloestSymbol: UseSymbol = null
+      const curToken = this.parser.currentToken
+      // 找到前面最近的 use db; 语句
+      for (let i = useSymbols.length - 1; i >= 0; i--) {
+        const curSymbol = useSymbols[i]
+        if ((curSymbol.context as Use_stmtContext).stop.tokenIndex < curToken.tokenIndex) {
+          cloestSymbol = curSymbol
+          break
+        }
+      }
+
+      const table = idents[0].text
+      this.addNewSymbol(ctx, TableSymbol, table, cloestSymbol.name)
+    }
+
+    if (len === 2) {
+      // db.tbl
+      const db = idents[0].text
+      const table = idents[1].text
+      this.addNewSymbol(ctx, TableSymbol, table, db)
+    }
+  }
+
+  visitSelect_list_item(ctx: Select_list_itemContext) {
+    const expr = ctx.expr()
+    const selectListAlias = ctx.select_list_alias()
+    if (expr?.text?.toUpperCase() === 'FROM' && selectListAlias?.qident()) {
+      this.handleQident(selectListAlias.qident())
+    }
+    return null
+  }
+
+  visitTable_name(ctx: Table_nameContext) {
+    this.handleQident(ctx.qident())
     return null
   }
 
@@ -55,8 +83,12 @@ export class SymbolTableVisitor extends AbstractParseTreeVisitor<SymbolTable> im
    * @returns The new symbol.
    */
   private addNewSymbol<T extends CSymbol>(context: ParseTree, type: new (...args: any[]) => T, ...args: any[]): T {
-    const symbol = this.symbolTable.addNewSymbolOfType(type, null, ...args)
-    symbol.context = context
-    return symbol
+    try {
+      const symbol = this.symbolTable.addNewSymbolOfType(type, null, ...args)
+      symbol.context = context
+      return symbol
+    } catch (_error) {
+      return null
+    }
   }
 }

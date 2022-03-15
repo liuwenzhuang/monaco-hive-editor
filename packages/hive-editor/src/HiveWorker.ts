@@ -60,7 +60,6 @@ export class HiveWorker implements IHiveWorker {
     }
 
     const extraOption = {
-      tableReqCb: this.languageService.getTableByDb.bind(this, this.createData.tableReqUrl),
       dbReqCb: () =>
         Promise.resolve(
           this.dataBases.map<any>((item) => ({
@@ -68,6 +67,8 @@ export class HiveWorker implements IHiveWorker {
             insertText: item.label,
           }))
         ),
+      tableReqCb: this.languageService.getTableByDb.bind(null, this.createData.tableReqUrl),
+      columnReqCb: this.languageService.getColumnByDbTable.bind(null, this.createData.columnReqUrl),
     }
     const result = await getSuggestions(code, position, extraOption)
     return result as unknown as Promise<EnhanceCompletionItem[]>

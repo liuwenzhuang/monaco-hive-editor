@@ -92,3 +92,29 @@ export function getTokensBeforePosition(tokenStream: CommonTokenStream, caretPos
     .slice(lastSemiTokenIndex !== -1 ? lastSemiTokenIndex + 1 : 0, currentCursorTokenIndex + 1)
     .filter((token) => token.channel === HplsqlLexer.DEFAULT_TOKEN_CHANNEL)
 }
+
+export function getTokensAfterPosition(tokenStream: CommonTokenStream, caretPosition: CaretPosition): Token[] {
+  const tokenList = tokenStream.getTokens()
+  let postSemiTokenIndex = -1
+
+  const currentCursorTokenIndex = tokenList.findIndex((token) => {
+    const text = token.text
+    const startIndex = token.charPositionInLine
+    const endIndex = startIndex + text.length + 1
+    return token.line === caretPosition.line && startIndex <= caretPosition.column && endIndex >= caretPosition.column
+  })
+  if (currentCursorTokenIndex === -1) {
+    return []
+  }
+
+  for (let i = currentCursorTokenIndex + 1; i < tokenList.length; i++) {
+    const token = tokenList[i]
+    if (token.type === HplsqlParser.T_SEMICOLON) {
+      postSemiTokenIndex = i
+      break
+    }
+  }
+  return tokenList
+    .slice(currentCursorTokenIndex, postSemiTokenIndex !== -1 ? postSemiTokenIndex + 1 : undefined)
+    .filter((token) => token.channel === HplsqlLexer.DEFAULT_TOKEN_CHANNEL)
+}
