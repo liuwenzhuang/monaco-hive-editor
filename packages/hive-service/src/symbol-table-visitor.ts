@@ -40,7 +40,7 @@ export class SymbolTableVisitor extends AbstractParseTreeVisitor<SymbolTable> im
       }
 
       const table = idents[0].text
-      this.addNewSymbol(ctx, TableSymbol, table, cloestSymbol.name)
+      this.addNewSymbol(ctx, TableSymbol, table, cloestSymbol?.name)
     }
 
     if (len === 2) {
