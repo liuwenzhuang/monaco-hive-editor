@@ -8,7 +8,7 @@ import fuzzysort from 'fuzzysort'
 import { computeTokenPosition, getTokensAfterPosition, getTokensBeforePosition } from './compute-token-position'
 import { SymbolKind } from './language-support'
 import { FunctionKeywords } from '@lwz/hive-meta-data'
-import { TableSymbol, UseSymbol } from './symbols/TopSymols'
+import { TableSymbol, UseSymbol } from './symbols/TopSymbols'
 
 export interface CaretPosition {
   /**

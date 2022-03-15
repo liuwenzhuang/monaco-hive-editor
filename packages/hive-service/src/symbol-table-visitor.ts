@@ -8,7 +8,7 @@ import {
   Select_list_itemContext,
   QidentContext,
 } from '@lwz/hive-parser/lib/antlr4/HplsqlParser'
-import { TableSymbol, UseSymbol } from './symbols/TopSymols'
+import { TableSymbol, UseSymbol } from './symbols/TopSymbols'
 
 export class SymbolTableVisitor extends AbstractParseTreeVisitor<SymbolTable> implements HplsqlVisitor<SymbolTable> {
   constructor(private parser: HplsqlParser, private symbolTable: SymbolTable = new SymbolTable('Hplsql', {})) {
