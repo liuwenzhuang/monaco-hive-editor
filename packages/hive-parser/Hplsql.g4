@@ -1178,7 +1178,7 @@ expr_dot_method_call :
       ;
 
 expr_dot_property_access :
-       (ident | expr_func) T_DOT ident
+       (ident | expr_func) T_DOT {this._input.LT(1).text.toUpperCase() !== "FROM"}? ident
       ;
 
 expr_func_params :

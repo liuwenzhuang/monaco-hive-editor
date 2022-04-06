@@ -14,7 +14,7 @@ export class UseSymbol extends ScopedSymbol {}
  * 表
  */
 export class TableSymbol extends CSymbol {
-  constructor(name: string, public db?: string) {
+  constructor(name: string, public db?: string, public aliasName?: string) {
     super(name)
   }
 }

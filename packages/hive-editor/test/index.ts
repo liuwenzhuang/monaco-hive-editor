@@ -11,7 +11,9 @@ function onDOMContentLoaded() {
     value: [
       'use mammut_idc;',
       '-- set hive.execution.engine=spark;',
-      'select count(*) from (select * from tableA) A left join (select * from tableB) B on A.key = B.key;',
+      'SELECT c.ID, c.NAME, c.AGE, o.AMOUNT',
+      'FROM CUSTOMERS c JOIN ORDERS o',
+      'ON (c.ID = o.CUSTOMER_ID);',
       'create table mammut_qa.students(id int, age char(2));',
       'select from testTable1;',
     ].join('\n'),

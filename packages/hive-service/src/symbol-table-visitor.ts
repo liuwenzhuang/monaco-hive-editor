@@ -7,6 +7,7 @@ import {
   Use_stmtContext,
   Select_list_itemContext,
   QidentContext,
+  From_table_name_clauseContext,
 } from '@lwz/hive-parser/lib/antlr4/HplsqlParser'
 import { TableSymbol, UseSymbol } from './symbols/TopSymbols'
 
@@ -19,7 +20,7 @@ export class SymbolTableVisitor extends AbstractParseTreeVisitor<SymbolTable> im
     return this.symbolTable
   }
 
-  private handleQident(ctx: QidentContext) {
+  private handleQident(ctx: QidentContext, aliasName?: string) {
     if (!ctx) {
       return
     }
@@ -40,14 +41,14 @@ export class SymbolTableVisitor extends AbstractParseTreeVisitor<SymbolTable> im
       }
 
       const table = idents[0].text
-      this.addNewSymbol(ctx, TableSymbol, table, cloestSymbol?.name)
+      this.addNewSymbol(ctx, TableSymbol, table, cloestSymbol?.name, aliasName)
     }
 
     if (len === 2) {
       // db.tbl
       const db = idents[0].text
       const table = idents[1].text
-      this.addNewSymbol(ctx, TableSymbol, table, db)
+      this.addNewSymbol(ctx, TableSymbol, table, db, aliasName)
     }
   }
 
@@ -61,7 +62,13 @@ export class SymbolTableVisitor extends AbstractParseTreeVisitor<SymbolTable> im
   }
 
   visitTable_name(ctx: Table_nameContext) {
-    this.handleQident(ctx.qident())
+    let aliasName = null
+    const parent = ctx.parent
+    if (parent instanceof From_table_name_clauseContext) {
+      const aliasClause = parent.from_alias_clause()
+      aliasName = aliasClause?.qident()?.text
+    }
+    this.handleQident(ctx.qident(), aliasName)
     return null
   }
 
