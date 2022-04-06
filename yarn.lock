@@ -142,9 +142,11 @@ __metadata:
   dependencies:
     "@lwz/hive-meta-data": "workspace:packages/hive-meta-data"
     "@lwz/hive-parser": "workspace:packages/hive-parser"
+    "@types/lodash-es": ^4.17.6
     antlr4-c3: ^1.1.16
     antlr4ts: ^0.5.0-alpha.4
     fuzzysort: ^1.1.4
+    lodash-es: ^4.17.21
     rimraf: ^3.0.2
   languageName: unknown
   linkType: soft
@@ -259,6 +261,15 @@ __metadata:
   dependencies:
     "@types/lodash": "*"
   checksum: acffe910e8cffe475b854d74f4372549ec700ac00d9ed885fd85ec34c3f9af1a262bf667000ea9126dc39a05a75f64593d8a5f312cfd7d90e91294d458be08a7
+  languageName: node
+  linkType: hard
+
+"@types/lodash-es@npm:^4.17.6":
+  version: 4.17.6
+  resolution: "@types/lodash-es@npm:4.17.6"
+  dependencies:
+    "@types/lodash": "*"
+  checksum: 9bd239dd525086e278821949ce12fbdd4f100a060fed9323fc7ad5661113e1641f28a7ebab617230ed3474680d8f4de705c1928b48252bb684be6ec9eed715db
   languageName: node
   linkType: hard
 

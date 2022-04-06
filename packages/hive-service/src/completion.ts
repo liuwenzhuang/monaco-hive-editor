@@ -17,6 +17,7 @@ import { SymbolKind } from './language-support'
 import { FunctionKeywords } from '@lwz/hive-meta-data'
 import { TableSymbol, UseSymbol } from './symbols/TopSymbols'
 import { getCurrentSqlInfo } from './util'
+import { isEqual } from 'lodash-es'
 
 export interface CaretPosition {
   /**
@@ -157,6 +158,18 @@ export function getSuggestionsForParseTree(
   const symbolTable = symbolTableFn()
 
   if (candidates.rules.has(HplsqlParser.RULE_table_name)) {
+    const rules = candidates.rules.get(HplsqlParser.RULE_table_name)
+    if (
+      isEqual(rules.ruleList, [
+        HplsqlParser.RULE_program,
+        HplsqlParser.RULE_block,
+        HplsqlParser.RULE_stmt,
+        HplsqlParser.RULE_create_table_stmt,
+      ])
+    ) {
+      // 建表语句的 表名 不需要提示
+      return Promise.resolve(completions)
+    }
     const dbSchemaList = symbolTable.getSymbolsOfType(UseSymbol)
     const lastDbSchema = dbSchemaList ? dbSchemaList[dbSchemaList.length - 1] : undefined
     const curToken = prevTokens[prevTokens.length - 1]

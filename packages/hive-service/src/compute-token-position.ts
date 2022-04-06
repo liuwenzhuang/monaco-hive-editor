@@ -1,7 +1,6 @@
 import { ParseTree, TerminalNode } from 'antlr4ts/tree'
-import { CommonTokenStream, ParserRuleContext, Token, TokenStream } from 'antlr4ts'
+import { ParserRuleContext, Token, TokenStream } from 'antlr4ts'
 import { TokenPosition, CaretPosition } from './completion'
-import { HplsqlLexer, HplsqlParser } from '@lwz/hive-parser/lib'
 
 export function computeTokenPosition(
   parseTree: ParseTree,
@@ -58,63 +57,4 @@ function computeTokenPositionOfChildNode(
       }
     }
   }
-}
-
-/**
- * 获取当前位置上一个分号 -> 当前位置 之间的 token 列表
- *
- * @param tokenStream
- * @param caretPosition
- * @returns
- */
-export function getTokensBeforePosition(tokenStream: CommonTokenStream, caretPosition: CaretPosition): Token[] {
-  const tokenList = tokenStream.getTokens()
-  let lastSemiTokenIndex = -1
-
-  const currentCursorTokenIndex = tokenList.findIndex((token) => {
-    const text = token.text
-    const startIndex = token.charPositionInLine
-    const endIndex = startIndex + text.length + 1
-    return token.line === caretPosition.line && startIndex <= caretPosition.column && endIndex >= caretPosition.column
-  })
-  if (currentCursorTokenIndex === -1) {
-    return []
-  }
-
-  for (let i = currentCursorTokenIndex - 1; i >= 0; i--) {
-    const token = tokenList[i]
-    if (token.type === HplsqlParser.T_SEMICOLON) {
-      lastSemiTokenIndex = i
-      break
-    }
-  }
-  return tokenList
-    .slice(lastSemiTokenIndex !== -1 ? lastSemiTokenIndex + 1 : 0, currentCursorTokenIndex + 1)
-    .filter((token) => token.channel === HplsqlLexer.DEFAULT_TOKEN_CHANNEL)
-}
-
-export function getTokensAfterPosition(tokenStream: CommonTokenStream, caretPosition: CaretPosition): Token[] {
-  const tokenList = tokenStream.getTokens()
-  let postSemiTokenIndex = -1
-
-  const currentCursorTokenIndex = tokenList.findIndex((token) => {
-    const text = token.text
-    const startIndex = token.charPositionInLine
-    const endIndex = startIndex + text.length + 1
-    return token.line === caretPosition.line && startIndex <= caretPosition.column && endIndex >= caretPosition.column
-  })
-  if (currentCursorTokenIndex === -1) {
-    return []
-  }
-
-  for (let i = currentCursorTokenIndex + 1; i < tokenList.length; i++) {
-    const token = tokenList[i]
-    if (token.type === HplsqlParser.T_SEMICOLON) {
-      postSemiTokenIndex = i
-      break
-    }
-  }
-  return tokenList
-    .slice(currentCursorTokenIndex, postSemiTokenIndex !== -1 ? postSemiTokenIndex + 1 : undefined)
-    .filter((token) => token.channel === HplsqlLexer.DEFAULT_TOKEN_CHANNEL)
 }

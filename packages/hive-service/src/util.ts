@@ -23,7 +23,7 @@ export function getCurrentSqlInfo(tokenStream: CommonTokenStream, caretPosition:
   }
   for (let i = currentCursorTokenIndex + 1; i <= tokenList.length; i++) {
     const token = tokenList[i]
-    if (token.type === HplsqlParser.T_SEMICOLON) {
+    if (token.type === HplsqlParser.EOF || token.type === HplsqlParser.T_SEMICOLON) {
       postSemiTokenIndex = i
       break
     }
