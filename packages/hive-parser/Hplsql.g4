@@ -242,7 +242,7 @@ create_table_columns :
      ;
 
 create_table_columns_item :
-       column_name dtype dtype_len? dtype_attr* create_table_column_inline_cons*
+       column_name dtype dtype_len? dtype_attr* create_table_column_inline_cons* (T_COMMENT expr)?
      | (T_CONSTRAINT qident)? create_table_column_cons
      ;
 

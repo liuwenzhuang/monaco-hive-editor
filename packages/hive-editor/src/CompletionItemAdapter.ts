@@ -70,6 +70,7 @@ export default class CompletionItemAdapter implements Languages.CompletionItemPr
         offset,
         range,
         kind: this.transferKind(item.kind),
+        insertTextRules: this.transferInsertTextRules(item.kind),
         ...item,
       }
     })
@@ -85,8 +86,19 @@ export default class CompletionItemAdapter implements Languages.CompletionItemPr
         return Languages.CompletionItemKind.Function
       case SymbolKind.Keyword:
         return Languages.CompletionItemKind.Keyword
+      case SymbolKind.LanguageSnippet:
+        return Languages.CompletionItemKind.Snippet
       default:
         return Languages.CompletionItemKind.Variable
+    }
+  }
+
+  transferInsertTextRules(kind: SymbolKind) {
+    switch (kind) {
+      case SymbolKind.LanguageSnippet:
+        return Languages.CompletionItemInsertTextRule.InsertAsSnippet
+      default:
+        return undefined
     }
   }
 }

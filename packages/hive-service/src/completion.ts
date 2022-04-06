@@ -14,10 +14,10 @@ import { SymbolTableVisitor } from './symbol-table-visitor'
 import fuzzysort from 'fuzzysort'
 import { computeTokenPosition } from './compute-token-position'
 import { SymbolKind } from './language-support'
-import { FunctionKeywords } from '@lwz/hive-meta-data'
 import { TableSymbol, UseSymbol } from './symbols/TopSymbols'
 import { getCurrentSqlInfo } from './util'
 import { isEqual } from 'lodash-es'
+import completionSupport from './completion-support'
 
 export interface CaretPosition {
   /**
@@ -36,7 +36,7 @@ export type ComputeTokenPositionFunction = (
   caretPosition: CaretPosition
 ) => TokenPosition
 
-interface CompletionItem {
+export interface CompletionItem {
   label: string
   kind: SymbolKind
   insertText: string
@@ -285,19 +285,9 @@ export function getSuggestionsForParseTree(
       }
     })
 
-    // functions
-    const functions = FunctionKeywords.map<CompletionItem>((item) => {
-      const label = item.name.toUpperCase()
-      return {
-        label,
-        kind: SymbolKind.Function,
-        insertText: `${label}()`,
-        detail: item.synax,
-        documentation: item.desc,
-      }
-    })
+    completions.push(...completionSupport.commonFunctions)
 
-    completions.push(...functions)
+    completions.push(...completionSupport.commonSuggestions)
   }
 
   const isIgnoredToken = position.context instanceof TerminalNode && ignored.indexOf(position.context.symbol.type) >= 0
