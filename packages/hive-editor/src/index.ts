@@ -29,6 +29,14 @@ export default class MonacoHiveEditor {
     return this.editor
   }
 
+  get model() {
+    return this.editor.getModel()
+  }
+
+  setEditorOptions(options: Omit<editor.IEditorOptions & editor.IGlobalEditorOptions, 'language'>) {
+    this.model?.updateOptions(options)
+  }
+
   setCompletionsOptions(options: CompletionsOptions): void {
     const hiveDefaults: LanguageServiceDefaults = languages[languageID].hiveDefaults
     hiveDefaults.setCompletionsOptions(options)
@@ -40,7 +48,7 @@ export default class MonacoHiveEditor {
    */
   getSelectedValue(): string {
     const range = this.editor.getSelection()
-    return this.editor.getModel().getValueInRange(range)
+    return this.model?.getValueInRange(range)
   }
 
   /**
@@ -49,7 +57,6 @@ export default class MonacoHiveEditor {
    */
   getAllSelectedValue(): string[] {
     const ranges = this.editor.getSelections()
-    const model = this.editor.getModel()
-    return ranges.map((range) => model.getValueInRange(range))
+    return ranges.map((range) => this.model?.getValueInRange(range))
   }
 }

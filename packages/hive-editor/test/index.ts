@@ -1,4 +1,5 @@
 import MonacoHiveEditor from '../src/index'
+import { editor } from '../src/fillers/monaco-editor-core'
 
 let editorInstance: MonacoHiveEditor
 
@@ -33,6 +34,13 @@ function onBtnGroupClick(e: Event) {
         dataBases: [{ label: 'test1DB', detail: '测试数据库1' }, { label: 'testDB2' }],
         tableReqUrl: 'http://127.0.0.1:3001/getDbTables',
       })
+      break
+    case 'setEditorOptions':
+      editorInstance.setEditorOptions({
+        useTabStops: true,
+        tabSize: 2,
+      })
+      console.log(editorInstance.getEditor().getOptions().get(editor.EditorOption.fontFamily))
       break
     case 'getSelectedValue':
       alert(editorInstance.getSelectedValue())
