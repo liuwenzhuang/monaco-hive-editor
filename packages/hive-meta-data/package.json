@@ -10,7 +10,8 @@
   "author": "刘文壮 <liuwenzhuang@corp.netease.com>",
   "homepage": "",
   "license": "MIT",
-  "main": "lib/index.js",
+  "module": "lib/index.js",
+  "typings": "lib",
   "files": [
     "lib",
     "src"
