@@ -1,6 +1,7 @@
 import { SymbolKind } from './language-support'
 import { CompletionItem } from './completion'
 import { FunctionKeywords } from '@lwz/hive-meta-data'
+import { ColumnsRes, DatabasesRes, TablesRes } from './interface'
 
 class CompletionSupport {
   /**
@@ -53,6 +54,48 @@ class CompletionSupport {
         ].join('\n'),
       },
     ]
+  }
+
+  /**
+   * 转换接口返回的库提示
+   * @param res
+   * @returns
+   */
+  databaseSuggestionsMapper(res: DatabasesRes) {
+    return res.map<CompletionItem>((db) => ({
+      kind: SymbolKind.DatabaseLiteral,
+      label: db,
+      insertText: db,
+    }))
+  }
+
+  /**
+   * 转换接口返回的表提示
+   * @param res
+   * @returns
+   */
+  tableSuggestionsMapper(res: TablesRes) {
+    return res.map<CompletionItem>((item) => ({
+      kind: SymbolKind.TableLiteral,
+      label: item.name,
+      insertText: item.name,
+      detail: item.comments,
+    }))
+  }
+
+  /**
+   * 转换接口返回的列提示
+   * @param res
+   * @returns
+   */
+  columnSuggestionsMapper(res: ColumnsRes) {
+    return res.map<CompletionItem>((item) => ({
+      kind: SymbolKind.ColumnLiteral,
+      label: item.name,
+      insertText: item.name,
+      detail: item.type,
+      documentation: item.comments,
+    }))
   }
 }
 

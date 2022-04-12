@@ -31,8 +31,9 @@ function onBtnGroupClick(e: Event) {
       editorInstance.setCompletionsOptions({
         azkabanKeywords: [{ label: 'az.1.day.ago', detail: '一天前' }],
         noTestDataBase: true,
-        dataBases: [{ label: 'test1DB', detail: '测试数据库1' }, { label: 'testDB2' }],
+        dataBases: ['testDb1', 'testDb2', 'testDb3'],
         tableReqUrl: 'http://127.0.0.1:3001/getDbTables',
+        columnReqUrl: 'http://127.0.0.1:3001/getColumns',
       })
       break
     case 'setEditorOptions':

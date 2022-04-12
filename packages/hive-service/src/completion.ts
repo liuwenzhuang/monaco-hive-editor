@@ -16,8 +16,9 @@ import { computeTokenPosition } from './compute-token-position'
 import { SymbolKind } from './language-support'
 import { TableSymbol, UseSymbol } from './symbols/TopSymbols'
 import { getCurrentSqlInfo } from './util'
-import { isEqual } from 'lodash-es'
+import { isEmpty, isEqual } from 'lodash-es'
 import completionSupport from './completion-support'
+import { ColumnsRes, DatabasesRes, TablesRes } from './interface'
 
 export interface CaretPosition {
   /**
@@ -139,6 +140,7 @@ export function getSuggestionsForParseTree(
   ]
   core.ignoredTokens = new Set(ignored)
   core.preferredRules = new Set([
+    HplsqlParser.RULE_useSuggest,
     HplsqlParser.RULE_table_name,
     HplsqlParser.RULE_ifNotExistsSuggest,
     HplsqlParser.RULE_ifExistsSuggest,
@@ -152,6 +154,10 @@ export function getSuggestionsForParseTree(
   let ignoreOtherCandidates = false
 
   const symbolTable = symbolTableFn()
+
+  if (candidates.rules.has(HplsqlParser.RULE_useSuggest)) {
+    return extraOption?.dbReqCb?.().then(completionSupport.databaseSuggestionsMapper)
+  }
 
   if (candidates.rules.has(HplsqlParser.RULE_table_name)) {
     const rules = candidates.rules.get(HplsqlParser.RULE_table_name)
@@ -173,15 +179,15 @@ export function getSuggestionsForParseTree(
       // 处理 "db." 的情况
       const prevToken = prevTokens[prevTokens.length - 2]
       if (prevToken) {
-        return extraOption?.tableReqCb?.(prevToken.text)
+        return extraOption?.tableReqCb?.(prevToken.text).then(completionSupport.tableSuggestionsMapper)
       }
     }
     if (!lastDbSchema) {
       // 提示库
-      return extraOption?.dbReqCb?.()
+      return extraOption?.dbReqCb?.().then(completionSupport.databaseSuggestionsMapper)
     } else {
       // 提示 库下表
-      return extraOption?.tableReqCb?.(lastDbSchema.name)
+      return extraOption?.tableReqCb?.(lastDbSchema.name).then(completionSupport.tableSuggestionsMapper)
     }
   }
 
@@ -207,7 +213,7 @@ export function getSuggestionsForParseTree(
         )
         if (table) {
           // 表名.列名
-          return extraOption?.columnReqCb?.(table.db, table.name)
+          return extraOption?.columnReqCb?.(table.db, table.name).then(completionSupport.columnSuggestionsMapper)
         }
       }
     }
@@ -219,7 +225,7 @@ export function getSuggestionsForParseTree(
         const dbPrefix = table.db ? `${table.db}.` : ''
         return {
           label: tableName,
-          insertText: `${tableName}.`,
+          insertText: tableName,
           kind: SymbolKind.TableLiteral,
           detail: `${dbPrefix}${tableName}`,
         }
@@ -230,15 +236,12 @@ export function getSuggestionsForParseTree(
     if (len === 1) {
       // 只有一张表，直接请求表下字段
       const firstTable = filteredTableList[0]
-      return extraOption?.columnReqCb?.(firstTable.db, firstTable.name)
+      return extraOption?.columnReqCb?.(firstTable.db, firstTable.name).then(completionSupport.columnSuggestionsMapper)
     }
   }
 
   candidates.rules.forEach((_callStack, key) => {
     switch (key) {
-      case HplsqlParser.RULE_select_list:
-        ignoreOtherCandidates = true
-        break
       case HplsqlParser.RULE_ifNotExistsSuggest:
         completions.push({
           label: 'IF NOT EXISTS',
@@ -292,10 +295,10 @@ export function getSuggestionsForParseTree(
   return Promise.resolve(filterTokens(textToMatch, completions))
 }
 
-interface ExtraOption {
-  dbReqCb: () => Promise<CompletionItem[]>
-  tableReqCb: (dbSchema: string) => Promise<CompletionItem[]>
-  columnReqCb: (dbSchema: string, table: string) => Promise<CompletionItem[]>
+export interface ExtraOption {
+  dbReqCb: () => Promise<DatabasesRes>
+  tableReqCb: (dbSchema: string) => Promise<TablesRes>
+  columnReqCb: (dbSchema: string, table: string) => Promise<ColumnsRes>
 }
 
 /**

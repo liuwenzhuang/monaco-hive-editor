@@ -12,7 +12,7 @@ export interface CompletionsOptions {
   /**
    * database list
    */
-  dataBases?: UDCompletionItem[]
+  dataBases?: string[]
   /**
    * get tables by db name ajax url, return data type:
    * {data: UDCompletionItem[]}
@@ -204,7 +204,7 @@ export const hiveDefaults: LanguageServiceDefaults = new LanguageServiceDefaults
       { label: '${azkaban.flow.2.days.ago}' },
       { label: 'azkaban.flow.7.days.ago' },
     ],
-    dataBases: [{ label: 'test1DB', detail: '测试数据库1' }, { label: 'testDB2' }],
+    dataBases: ['test1DB', 'testDB2' ],
     noTestDataBase: false,
     tableReqUrl: 'http://127.0.0.1:3001/getDbTables',
     columnReqUrl: 'http://127.0.0.1:3001/getColumns',

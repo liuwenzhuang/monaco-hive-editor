@@ -69,9 +69,9 @@ export default class CompletionItemAdapter implements Languages.CompletionItemPr
         position,
         offset,
         range,
+        ...item,
         kind: this.transferKind(item.kind),
         insertTextRules: this.transferInsertTextRules(item.kind),
-        ...item,
       }
     })
 
@@ -88,6 +88,12 @@ export default class CompletionItemAdapter implements Languages.CompletionItemPr
         return Languages.CompletionItemKind.Keyword
       case SymbolKind.LanguageSnippet:
         return Languages.CompletionItemKind.Snippet
+      case SymbolKind.DatabaseLiteral:
+        return Languages.CompletionItemKind.Module
+      case SymbolKind.TableLiteral:
+        return Languages.CompletionItemKind.Class
+      case SymbolKind.ColumnLiteral:
+        return Languages.CompletionItemKind.Field
       default:
         return Languages.CompletionItemKind.Variable
     }

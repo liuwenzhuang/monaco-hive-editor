@@ -20,7 +20,7 @@ export interface HiveCreateData extends CompletionsOptions {
 export class HiveWorker implements IHiveWorker {
   private languageService: HiveLanguageService
   azkabanKeywords: UDCompletionItem[]
-  dataBases: UDCompletionItem[]
+  dataBases: string[]
 
   constructor(private ctx: IWorkerContext, private createData: HiveCreateData) {
     this.languageService = new HiveLanguageService()
@@ -51,26 +51,20 @@ export class HiveWorker implements IHiveWorker {
     }
     if (code.substring(offset - 3, offset) === '${!' && this.dataBases && this.dataBases.length) {
       const suffixChar = code.charAt(offset)
-      const suggestions: EnhanceCompletionItem[] = this.dataBases.map((item) => ({
-        ...item,
+      const suggestions: EnhanceCompletionItem[] = this.dataBases.map((db) => ({
+        label: db,
         // 插入 ${!db}，判断后面是否已经有了 “}”
-        insertText: `${item.label}${suffixChar === '}' ? '' : '}'}`,
+        insertText: `${db}${suffixChar === '}' ? '' : '}'}`,
       }))
       return Promise.resolve(suggestions)
     }
 
     const extraOption = {
-      dbReqCb: () =>
-        Promise.resolve(
-          this.dataBases.map<any>((item) => ({
-            ...item,
-            insertText: item.label,
-          }))
-        ),
+      dbReqCb: () => Promise.resolve(this.dataBases),
       tableReqCb: this.languageService.getTableByDb.bind(null, this.createData.tableReqUrl),
       columnReqCb: this.languageService.getColumnByDbTable.bind(null, this.createData.columnReqUrl),
     }
-    const result = await getSuggestions(code, position, extraOption)
+    const result = await getSuggestions(code, position, extraOption as any)
     return result as unknown as Promise<EnhanceCompletionItem[]>
   }
 

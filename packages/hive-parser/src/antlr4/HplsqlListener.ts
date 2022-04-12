@@ -73,6 +73,7 @@ import { Dtype_lenContext } from "./HplsqlParser";
 import { Dtype_attrContext } from "./HplsqlParser";
 import { Dtype_defaultContext } from "./HplsqlParser";
 import { Create_database_stmtContext } from "./HplsqlParser";
+import { UseSuggestContext } from "./HplsqlParser";
 import { IfNotExistsSuggestContext } from "./HplsqlParser";
 import { IfExistsSuggestContext } from "./HplsqlParser";
 import { Create_database_optionContext } from "./HplsqlParser";
@@ -1025,6 +1026,17 @@ export interface HplsqlListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	exitCreate_database_stmt?: (ctx: Create_database_stmtContext) => void;
+
+	/**
+	 * Enter a parse tree produced by `HplsqlParser.useSuggest`.
+	 * @param ctx the parse tree
+	 */
+	enterUseSuggest?: (ctx: UseSuggestContext) => void;
+	/**
+	 * Exit a parse tree produced by `HplsqlParser.useSuggest`.
+	 * @param ctx the parse tree
+	 */
+	exitUseSuggest?: (ctx: UseSuggestContext) => void;
 
 	/**
 	 * Enter a parse tree produced by `HplsqlParser.ifNotExistsSuggest`.

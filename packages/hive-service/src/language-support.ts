@@ -24,6 +24,10 @@ export enum SymbolKind {
    */
   TableLiteral,
   /**
+   * 列名字面量
+   */
+  ColumnLiteral = 6,
+  /**
    * 预置的一些代码片段
    */
   LanguageSnippet,

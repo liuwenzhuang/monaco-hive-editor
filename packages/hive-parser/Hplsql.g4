@@ -440,6 +440,7 @@ create_database_stmt :
       T_CREATE (T_DATABASE | T_SCHEMA) ifNotExistsSuggest (T_IF T_NOT T_EXISTS)? expr create_database_option*
     ;
 
+useSuggest : ; // for suggestion
 ifNotExistsSuggest : ; // for suggestion
 ifExistsSuggest : ; // for suggestion
 
@@ -756,7 +757,7 @@ truncate_stmt :
      ;
 
 use_stmt :              // USE statement
-       T_USE expr
+       T_USE useSuggest expr
      ;
 
 values_into_stmt :     // VALUES INTO statement
