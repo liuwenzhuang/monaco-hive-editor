@@ -79,7 +79,7 @@ class CompletionSupport {
       kind: SymbolKind.TableLiteral,
       label: item.name,
       insertText: item.name,
-      detail: item.comments,
+      detail: item.comment,
     }))
   }
 
@@ -94,7 +94,7 @@ class CompletionSupport {
       label: item.name,
       insertText: item.name,
       detail: item.type,
-      documentation: item.comments,
+      documentation: item.comment,
     }))
   }
 }

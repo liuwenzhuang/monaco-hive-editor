@@ -8,7 +8,7 @@ export type DatabasesRes = string[]
  */
 export type TablesRes = Array<{
   name: string
-  comments: string
+  comment: string
 }>
 
 /**
@@ -17,5 +17,5 @@ export type TablesRes = Array<{
 export type ColumnsRes = Array<{
   name: string
   type: string
-  comments: string
+  comment: string
 }>
