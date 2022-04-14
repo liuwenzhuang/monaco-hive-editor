@@ -34,7 +34,7 @@ function setupMode(defaults: LanguageServiceDefaults, modeId: string): (...uris:
 
   languages.registerCompletionItemProvider(modeId, new CompletionItemAdapter(worker))
 
-  new DiagnosticsAdapter(modeId, worker)
+  new DiagnosticsAdapter(modeId, defaults, worker)
 
   return worker
 }
