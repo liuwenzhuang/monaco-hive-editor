@@ -139,14 +139,10 @@ export function getSuggestionsForParseTree(
   ]
   core.ignoredTokens = new Set(ignored)
   core.preferredRules = new Set([
-    // HplsqlParser.RULE_select_stmt,
     HplsqlParser.RULE_table_name,
     HplsqlParser.RULE_ifNotExistsSuggest,
     HplsqlParser.RULE_ifExistsSuggest,
     HplsqlParser.RULE_select_list,
-    HplsqlParser.RULE_from_table_name_clause,
-    // HplsqlParser.RULE_create_table_stmt,
-    // HplsqlParser.RULE_use_stmt,
   ])
   const candidates = core.collectCandidates(position.index)
 
