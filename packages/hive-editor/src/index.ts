@@ -8,10 +8,11 @@ export type WorkerAccessor = (...uris: Uri[]) => Promise<HiveWorker>
 
 export default class MonacoHiveEditor {
   private editor: editor.IStandaloneCodeEditor
+  private completionOption: CompletionsOptions = null
 
   constructor(domElem: HTMLElement, options?: Omit<editor.IStandaloneEditorConstructionOptions, 'language'>) {
     ;(self as any).MonacoEnvironment = {
-      getWorkerUrl: function (moduleId, label) {
+      getWorkerUrl: function (_moduleId: number, label: string) {
         if (label === languageID) return './hive.worker.js'
         return './editor.worker.js'
       },
@@ -37,9 +38,15 @@ export default class MonacoHiveEditor {
     this.model?.updateOptions(options)
   }
 
+  /**
+   * 设置补全功能的配置项
+   * @param options
+   */
   setCompletionsOptions(options: CompletionsOptions): void {
+    // 保留上一次的配置，后续改变即覆盖
+    this.completionOption = Object.assign(this.completionOption ?? {}, options)
     const hiveDefaults: LanguageServiceDefaults = languages[languageID].hiveDefaults
-    hiveDefaults.setCompletionsOptions(options)
+    hiveDefaults.setCompletionsOptions(this.completionOption)
   }
 
   /**
