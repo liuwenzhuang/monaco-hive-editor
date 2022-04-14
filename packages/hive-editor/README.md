@@ -160,13 +160,27 @@ const editorInstance = new MonacoHiveEditor(container)
 
 // 设置提示相关参数
 editorInstance.setCompletionsOptions({
-  dataBases: [
-    {
-      label: 'testDB1',
-      detail: 'description of testDB1',
+  dataBases: ['testDb1', 'testDb2'],
+  azkabanKeywords: [{ label: 'az.1.day.ago', detail: '一天前' }],
+  noTestDataBase: true,
+  tableReq: {
+      url: 'http://127.0.0.1:3001/getDbTables',
+      method: 'post',
+      dbKey: 'dbName',
+      data: {
+        email: 'liu1114589929@gmail.com',
+      },
     },
-  ],
-  tableReqUrl: 'http://db-table-service/v1/getTableByDb',
+    columnReq: {
+      url: 'http://127.0.0.1:3001/getColumns',
+      method: 'post',
+      dbKey: 'dbName',
+      tableKey: 'tableName',
+      data: {
+        email: 'liu1114589929@gmail.com',
+        dataSourceId: 'dataSource_id_1',
+      },
+    },
 })
 
 // 获取真正的编辑器实例
@@ -177,16 +191,10 @@ const editorText = editor.getValue()
 
 > 真正的编辑器实例类型为 `monaco.editor.IStandaloneCodeEditor`，具体 API 可参考 [官方文档](https://microsoft.github.io/monaco-editor/api/interfaces/monaco.editor.istandalonecodeeditor.html)。
 
-### setCompletionsOptions 参数中 tableReqUrl 说明
+### setCompletionsOptions 参数说明
 
-用于通过接口动态获取数据库下的表格，由于 worker 中不能接收方法，在需要接口获取库中的表格时需要传入 API 的接口地址。目前只支持 GET 方法，返回的数据结构需为：
+具体参数定义可见 [monaco.contribution.d.ts](./lib/esm/monaco.contribution.d.ts)。
 
-```js
-{
-  data: UDCompletionItem[]
-}
-```
+_tableReq_ 和 _columnReq_ 参数定义分别是表、列 ajax 请求的参数，因为 worker 中不能接收 function 作为参数，故传入必要参数，由 worker 进行 ajax 请求获取必要的接口数据响应。
 
-关于 [UDCompletionItem](./lib/esm/CompletionItemAdapter.d.ts)，一般用到的就两个属性，`label` 表示显示和插入的提示文本，`detail` 用来对提示项进行说明。
-
-> 当用户输入 _数据库名._ 时触发 API 请求（输入的数据库名需在 `dataBases` 参数中存在），不抛出异常。
+_tableReq_ 和 _columnReq_ 接口的响应定义分别见于 [hive-service 中的 interface](../hive-service/src/interface.ts) 中的 _TablesRes_ 和 _ColumnRes_。

@@ -89,6 +89,8 @@ export default class HiveLanguageService {
       method: baseReqData.method,
       url: baseReqData.url,
       data: { ...baseReqData.data, [baseReqData.dbKey]: db },
+    }).catch((_err) => {
+      //ignore
     })
   }
 
@@ -101,6 +103,8 @@ export default class HiveLanguageService {
         [baseReqData.dbKey]: db,
         [baseReqData.tableKey]: table,
       },
+    }).catch((_err) => {
+      // ignore
     })
   }
 }

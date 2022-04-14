@@ -32,7 +32,7 @@ export class WorkerManager {
       const completionsOptions = this.defaults.getCompletionsOptions()
       this.worker = editor.createWebWorker<HiveWorker>({
         // module that exports the create() method and returns a `JSONWorker` instance
-        moduleId: 'vs/language/typescript/hiveWorker',
+        moduleId: 'vs/language/hive/HiveWorker',
         label: this.modeId,
         // passed in to the create() method
         createData: {
@@ -69,11 +69,11 @@ export class WorkerManager {
       .then((client) => {
         clientWorker = client
       })
-      .then(() => {
+      .then((_) => {
         if (this.worker) {
           return this.worker.withSyncedResources(resources)
         }
       })
-      .then(() => clientWorker)
+      .then((_) => clientWorker)
   }
 }
