@@ -1,7 +1,7 @@
 import { LangError } from '@lwz/hive-parser/lib/error-listener'
 import { HiveParser, ProgramContext } from '@lwz/hive-parser'
 import { UDCompletionItem } from './CompletionItemAdapter'
-import { EnhanceCompletionItem } from './HiveWorker'
+import { CompletionsOptions } from './monaco.contribution'
 
 interface ReqOption<T = any> {
   url: string
@@ -72,43 +72,35 @@ export default class HiveLanguageService {
       const { method = 'get', data, url } = option
       if (method === 'get') {
         xhr.open('get', `${url}?${this.object2Query(data)}`, true)
+        xhr.setRequestHeader('Content-Type', 'application/json')
         xhr.send(null)
       }
 
       if (method === 'post') {
         xhr.open('post', url, true)
+        xhr.setRequestHeader('Content-Type', 'application/json')
         xhr.send(JSON.stringify(data))
       }
     })
   }
 
-  getTableByDb = (url: string, db: string) => {
+  getTableByDb = (baseReqData: CompletionsOptions['tableReq'], db: string) => {
     return this.request<UDCompletionItem[]>({
-      method: 'get',
-      url,
-      data: { db },
-    }).then((res) =>
-      res.map<EnhanceCompletionItem>((item) => ({
-        ...item,
-        insertText: item.label,
-      }))
-    )
+      method: baseReqData.method,
+      url: baseReqData.url,
+      data: { ...baseReqData.data, [baseReqData.dbKey]: db },
+    })
   }
 
-  getColumnByDbTable = (url: string, db: string, table: string) => {
+  getColumnByDbTable = (baseReqData: CompletionsOptions['columnReq'], db: string, table: string) => {
     return this.request<UDCompletionItem[]>({
-      method: 'get',
-      url,
+      method: baseReqData.method,
+      url: baseReqData.url,
       data: {
-        db,
-        table,
+        ...baseReqData.data,
+        [baseReqData.dbKey]: db,
+        [baseReqData.tableKey]: table,
       },
-    }).then((res) =>
-      res.map<EnhanceCompletionItem>((item) => ({
-        ...item,
-        label: `${db}.${table}.${item.label}`,
-        insertText: item.label,
-      }))
-    )
+    })
   }
 }

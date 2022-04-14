@@ -4,6 +4,12 @@ import { languageID } from './config'
 import { UDCompletionItem } from './CompletionItemAdapter'
 import { CaretPosition } from '@lwz/hive-service'
 
+export interface CompletionReq<T = Record<string, any>> {
+  url: string
+  method: 'get' | 'post'
+  data: T
+}
+
 export interface CompletionsOptions {
   /**
    * azkaban keywords
@@ -17,12 +23,17 @@ export interface CompletionsOptions {
    * get tables by db name ajax url, return data type:
    * {data: UDCompletionItem[]}
    */
-  tableReqUrl?: string
+  tableReq?: CompletionReq & {
+    dbKey: string
+  }
   /**
    * get columns by db name and table name, return data type:
    * {data: UDCompletionItem[]}
    */
-  columnReqUrl?: string
+  columnReq?: CompletionReq & {
+    dbKey: string
+    tableKey: string
+  }
   /**
    * whether support test databse grammar
    * ${!DB}.TABLE
@@ -204,10 +215,26 @@ export const hiveDefaults: LanguageServiceDefaults = new LanguageServiceDefaults
       { label: '${azkaban.flow.2.days.ago}' },
       { label: 'azkaban.flow.7.days.ago' },
     ],
-    dataBases: ['test1DB', 'testDB2' ],
+    dataBases: ['test1DB', 'testDB2'],
     noTestDataBase: false,
-    tableReqUrl: 'http://127.0.0.1:3001/getDbTables',
-    columnReqUrl: 'http://127.0.0.1:3001/getColumns',
+    tableReq: {
+      url: 'http://127.0.0.1:3001/getDbTables',
+      method: 'post',
+      dbKey: 'dbName',
+      data: {
+        email: 'liu1114589929@gmail.com',
+      },
+    },
+    columnReq: {
+      url: 'http://127.0.0.1:3001/getColumns',
+      method: 'post',
+      dbKey: 'dbName',
+      tableKey: 'tableName',
+      data: {
+        email: 'liu1114589929@gmail.com',
+        dataSourceId: 'dataSource_id_1',
+      },
+    },
   },
   {},
   {}

@@ -61,8 +61,8 @@ export class HiveWorker implements IHiveWorker {
 
     const extraOption = {
       dbReqCb: () => Promise.resolve(this.dataBases),
-      tableReqCb: this.languageService.getTableByDb.bind(null, this.createData.tableReqUrl),
-      columnReqCb: this.languageService.getColumnByDbTable.bind(null, this.createData.columnReqUrl),
+      tableReqCb: this.languageService.getTableByDb.bind(null, this.createData.tableReq),
+      columnReqCb: this.languageService.getColumnByDbTable.bind(null, this.createData.columnReq),
     }
     const result = await getSuggestions(code, position, extraOption as any)
     return result as unknown as Promise<EnhanceCompletionItem[]>

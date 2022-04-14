@@ -32,8 +32,24 @@ function onBtnGroupClick(e: Event) {
         azkabanKeywords: [{ label: 'az.1.day.ago', detail: '一天前' }],
         noTestDataBase: true,
         dataBases: ['testDb1', 'testDb2', 'testDb3'],
-        tableReqUrl: 'http://127.0.0.1:3001/getDbTables',
-        columnReqUrl: 'http://127.0.0.1:3001/getColumns',
+        tableReq: {
+          url: 'http://127.0.0.1:3001/getDbTables',
+          method: 'post',
+          dbKey: 'dbName',
+          data: {
+            email: 'liu1114589929@gmail.com',
+          },
+        },
+        columnReq: {
+          url: 'http://127.0.0.1:3001/getColumns',
+          method: 'post',
+          dbKey: 'dbName',
+          tableKey: 'tableName',
+          data: {
+            email: 'liu1114589929@gmail.com',
+            dataSourceId: 'dataSource_id_1',
+          },
+        },
       })
       break
     case 'setEditorOptions':
