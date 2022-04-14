@@ -19,8 +19,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "rimraf ./lib && tsc",
-    "prepare": "yarn build"
+    "build": "tsc",
+    "prepublish": "rimraf ./lib && yarn build"
   },
   "dependencies": {
     "@types/lodash-es": "^4.17.4",

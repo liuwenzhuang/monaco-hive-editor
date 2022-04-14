@@ -23,7 +23,7 @@
   "scripts": {
     "dev": "tsc --watch",
     "build": "tsc",
-    "prepare": "rimraf lib && yarn build"
+    "prepublish": "rimraf lib && yarn build"
   },
   "dependencies": {
     "@lwz/hive-meta-data": "workspace:packages/hive-meta-data",

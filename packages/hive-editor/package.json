@@ -21,7 +21,7 @@
   },
   "scripts": {
     "dev": "cd test && webpack-dev-server --env development ",
-    "prepare": "yarn build",
+    "prepublish": "yarn build",
     "build": "yarn build:umd && yarn build:esm",
     "build:umd": "rimraf ./lib/umd && cross-env NODE_ENV=production webpack",
     "build:esm": "rimraf ./lib/esm && tsc --build ./tsconfig.esm.json"

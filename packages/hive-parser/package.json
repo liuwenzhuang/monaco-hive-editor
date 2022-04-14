@@ -30,7 +30,7 @@
     "antlr4ts": "antlr4ts -visitor ./Hplsql.g4 -o ./src/antlr4",
     "build": "tsc",
     "build:grammar": "yarn antlr4ts && yarn build",
-    "prepare": "rimraf lib && yarn build"
+    "prepublish": "rimraf lib && yarn build"
   },
   "devDependencies": {
     "antlr4ts-cli": "^0.5.0-alpha.4",
