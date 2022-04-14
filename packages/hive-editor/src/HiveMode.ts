@@ -1,7 +1,7 @@
 import { WorkerManager } from './WorkerManager'
 import type { HiveWorker } from './HiveWorker'
 import { LanguageServiceDefaults } from './monaco.contribution'
-import { languages, Uri } from './fillers/monaco-editor-core'
+import { languages, Uri } from './filters/monaco-editor-core'
 import { monarchLanguage, richLanguageConfiguration } from './HiveLang'
 import CompletionItemAdapter from './CompletionItemAdapter'
 import DiagnosticsAdapter from './DiagnosticsAdapter'

@@ -1,5 +1,5 @@
 import type * as mode from './HiveMode'
-import { languages, Emitter, IEvent, Uri } from './fillers/monaco-editor-core'
+import { languages, Emitter, IEvent, Uri } from './filters/monaco-editor-core'
 import { languageID } from './config'
 import { UDCompletionItem } from './CompletionItemAdapter'
 import { CaretPosition } from '@lwz/hive-service'

@@ -1,5 +1,5 @@
 import MonacoHiveEditor from '../src/index'
-import { editor } from '../src/fillers/monaco-editor-core'
+import { editor } from '../src/filters/monaco-editor-core'
 
 let editorInstance: MonacoHiveEditor
 

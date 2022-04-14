@@ -1,9 +1,14 @@
 import { SymbolKind } from '@lwz/hive-service/lib/language-support'
-import * as monaco from 'monaco-editor-core'
+import {
+  languages as Languages,
+  editor as Editor,
+  Uri,
+  Range,
+  Position,
+  CancellationToken,
+} from './filters/monaco-editor-core'
 import { WorkerAccessor } from './index'
-
-import Languages = monaco.languages
-import Editor = monaco.editor
+import { EnhanceCompletionItem } from './HiveWorker'
 
 /**
  * 用户提供的自动补全的配置
@@ -15,8 +20,8 @@ export interface UDCompletionItem extends Pick<Languages.CompletionItem, 'label'
 
 export interface HiveCompletionItem extends Languages.CompletionItem {
   label: string
-  uri: monaco.Uri
-  position: monaco.Position
+  uri: Uri
+  position: Position
   offset: number
 }
 
@@ -31,53 +36,45 @@ export default class CompletionItemAdapter implements Languages.CompletionItemPr
   /**
    * Provide completion items for the given position and document.
    */
-  public async provideCompletionItems(
+  public provideCompletionItems(
     model: Editor.ITextModel,
-    position: monaco.Position,
+    position: Position,
     context: Languages.CompletionContext,
-    token: monaco.CancellationToken
+    token: CancellationToken
   ): Promise<Languages.CompletionList | undefined> {
     const wordInfo = model.getWordUntilPosition(position)
-    const wordRange = new monaco.Range(
-      position.lineNumber,
-      wordInfo.startColumn,
-      position.lineNumber,
-      wordInfo.endColumn
-    )
+    const wordRange = new Range(position.lineNumber, wordInfo.startColumn, position.lineNumber, wordInfo.endColumn)
     const uri = model.uri
     const offset = model.getOffsetAt(position)
 
-    const worker = await this.worker(uri)
+    return this.worker(uri)
+      .then((worker) => {
+        return worker.getCompletionsAtPosition(uri.toString(), offset, {
+          line: position.lineNumber,
+          column: position.column,
+        })
+      })
+      .then((info: EnhanceCompletionItem[]) => {
+        if (!info || model.isDisposed()) {
+          return
+        }
+        const suggestions: HiveCompletionItem[] = info.map((item) => {
+          const range = wordRange
+          return {
+            uri,
+            position,
+            offset,
+            range,
+            ...item,
+            kind: this.transferKind(item.kind),
+            insertTextRules: this.transferInsertTextRules(item.kind),
+          }
+        })
 
-    if (model.isDisposed()) {
-      return
-    }
-
-    const info = await worker.getCompletionsAtPosition(uri.toString(), offset, {
-      line: position.lineNumber,
-      column: position.column,
-    })
-
-    if (!info || model.isDisposed()) {
-      return
-    }
-
-    const suggestions: HiveCompletionItem[] = info.map((item) => {
-      const range = wordRange
-      return {
-        uri,
-        position,
-        offset,
-        range,
-        ...item,
-        kind: this.transferKind(item.kind),
-        insertTextRules: this.transferInsertTextRules(item.kind),
-      }
-    })
-
-    return {
-      suggestions,
-    }
+        return {
+          suggestions,
+        }
+      })
   }
 
   transferKind(kind: number) {

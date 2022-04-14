@@ -1,4 +1,4 @@
-import { editor, MarkerSeverity, Uri } from './fillers/monaco-editor-core'
+import { editor, MarkerSeverity, Uri } from './filters/monaco-editor-core'
 import { WorkerAccessor } from './index'
 import { languageID } from './config'
 import { LangError } from '@lwz/hive-parser/lib/error-listener'

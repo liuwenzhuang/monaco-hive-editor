@@ -1,7 +1,7 @@
 import { HiveWorker } from './HiveWorker'
 import { languageID } from './config'
 import { LanguageServiceDefaults } from './monaco.contribution'
-import { editor, Uri, IDisposable } from './fillers/monaco-editor-core'
+import { editor, Uri, IDisposable } from './filters/monaco-editor-core'
 
 export class WorkerManager {
   private configChangeListener: IDisposable
