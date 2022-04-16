@@ -1,4 +1,4 @@
-import { editor, languages, Uri, Range } from './filters/monaco-editor-core'
+import { editor, languages, Uri } from './filters/monaco-editor-core'
 import { languageExtensionPoint, languageID } from './config'
 import { HiveWorker } from './HiveWorker'
 import { CompletionsOptions, LanguageServiceDefaults } from './monaco.contribution'
@@ -11,11 +11,24 @@ export default class MonacoHiveEditor {
   private completionOption: CompletionsOptions = null
   private hiveDefaults: LanguageServiceDefaults = null
 
-  constructor(domElem: HTMLElement, options?: Omit<editor.IStandaloneEditorConstructionOptions, 'language'>) {
+  constructor(
+    domElem: HTMLElement,
+    options?: Omit<editor.IStandaloneEditorConstructionOptions, 'language'> & {
+      /**
+       * webpack 等环境下的 publicPath，用于加载 worker.js
+       */
+      publicPath?: string
+    }
+  ) {
     ;(self as any).MonacoEnvironment = {
       getWorkerUrl: function (_moduleId: number, label: string) {
-        if (label === languageID) return './hive.worker.js'
-        return './editor.worker.js'
+        const webpackPublicPath = options.publicPath ?? __webpack_public_path__
+        let publicPath = typeof webpackPublicPath === 'string' ? webpackPublicPath : './'
+        if (!publicPath.endsWith('/')) {
+          publicPath += '/'
+        }
+        if (label === languageID) return `${publicPath}hive.worker.js`
+        return `${publicPath}editor.worker.js`
       },
     }
 

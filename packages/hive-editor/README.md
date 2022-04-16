@@ -26,17 +26,19 @@ $ yarn add @lwz/hive-editor
 
 module.exports = {
   entry: {
-    index: './src/index.ts',
     'editor.worker': 'monaco-editor-core/esm/vs/editor/editor.worker.js',
     'hive.worker': '@lwz/hive-editor/lib/esm/hive.worker.js',
+    index: './src/index.ts',
   },
   output: {
     globalObject: 'self',
     filename: (chunkData) => {
       switch (chunkData.chunk.name) {
         case 'editor.worker':
+          // 文件名不能变
           return 'editor.worker.js'
         case 'hive.worker':
+          // 文件名不能变
           return 'hive.worker.js'
         default:
           return 'index.js'
@@ -64,6 +66,8 @@ module.exports = {
 }
 ```
 
+> 注意，两个 worker 文件 build 后的文件名不能改变，且如果是 webpack 环境下，默认加载的路径会拼上 `__webpack_public_path__`，也可以像下面一样显式地指定 publicPath 属性：
+
 ```js
 // editor.js
 
@@ -78,6 +82,7 @@ new MonacoHiveEditor(container, {
     'select count(*) from (select * from src) A left join (select * from src) B on A.key = B.key;',
     'create table students(id int, age char(2));',
   ].join('\n'),
+  publicPath: __webpack_public_path__
 })
 ```
 
@@ -164,23 +169,23 @@ editorInstance.setCompletionsOptions({
   azkabanKeywords: [{ label: 'az.1.day.ago', detail: '一天前' }],
   noTestDataBase: true,
   tableReq: {
-      url: 'http://127.0.0.1:3001/getDbTables',
-      method: 'post',
-      dbKey: 'dbName',
-      data: {
-        email: 'liu1114589929@gmail.com',
-      },
+    url: 'http://127.0.0.1:3001/getDbTables',
+    method: 'post',
+    dbKey: 'dbName',
+    data: {
+      email: 'liu1114589929@gmail.com',
     },
-    columnReq: {
-      url: 'http://127.0.0.1:3001/getColumns',
-      method: 'post',
-      dbKey: 'dbName',
-      tableKey: 'tableName',
-      data: {
-        email: 'liu1114589929@gmail.com',
-        dataSourceId: 'dataSource_id_1',
-      },
+  },
+  columnReq: {
+    url: 'http://127.0.0.1:3001/getColumns',
+    method: 'post',
+    dbKey: 'dbName',
+    tableKey: 'tableName',
+    data: {
+      email: 'liu1114589929@gmail.com',
+      dataSourceId: 'dataSource_id_1',
     },
+  },
 })
 
 // 获取真正的编辑器实例

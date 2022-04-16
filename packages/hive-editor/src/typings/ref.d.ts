@@ -4,3 +4,5 @@
  *--------------------------------------------------------------------------------------------*/
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path='../../../../node_modules/monaco-editor-core/monaco.d.ts'/>
+
+declare let __webpack_public_path__: string
