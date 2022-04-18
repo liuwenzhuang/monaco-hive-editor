@@ -18,7 +18,7 @@
 // HPL/SQL Procedural SQL Extension Grammar
 grammar Hplsql;
 
-program : block EOF;
+program : EOF | (block EOF? | EOF);
 
 block : ((begin_end_block | stmt) T_GO?)+ ;               // Multiple consecutive blocks/statements
 
