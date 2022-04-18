@@ -21,7 +21,7 @@
   },
   "scripts": {
     "dev": "node ./test/server/index.js",
-    "dev:editor": "cd test && webpack-dev-server --env development",
+    "dev:editor": "webpack-dev-server --config ./test/webpack.config.js --env development",
     "prepublish": "yarn build",
     "build": "yarn build:umd && yarn build:esm",
     "build:umd": "rimraf ./lib/umd && cross-env NODE_ENV=production webpack",

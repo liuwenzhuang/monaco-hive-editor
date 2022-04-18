@@ -3,13 +3,15 @@ const path = require('path')
 
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 
+const testRoot = __dirname
+
 module.exports = {
   mode: 'development',
   devtool: 'cheap-module-eval-source-map',
   entry: {
-    index: './index.ts',
+    index: path.join(testRoot, './index.ts'),
     'editor.worker': 'monaco-editor-core/esm/vs/editor/editor.worker.js',
-    'hive.worker': '../src/hive.worker.ts',
+    'hive.worker': path.join(testRoot, '../src/hive.worker.ts'),
   },
   output: {
     globalObject: 'self',
@@ -47,7 +49,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: './index.html',
+      template: path.join(testRoot, './index.html'),
     }),
   ],
 }

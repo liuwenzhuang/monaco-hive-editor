@@ -101,11 +101,14 @@ app.listen(HTTP_PORT, () => {
   console.log(`local test server running at: http://127.0.0.1:${HTTP_PORT}`)
 })
 
-spawn(path.join(__dirname, '../../../../node_modules/.bin/webpack-dev-server'), [], {
-  shell: true,
-  stdio: 'inherit',
-  cwd: path.join(__dirname, '../'),
-  env: 'NODE_ENV=development;env=development',
-})
+spawn(
+  path.join(__dirname, '../../../../node_modules/.bin/webpack-dev-server'),
+  ['--config', path.join(__dirname, '../webpack.config.js'), '--env', 'development'],
+  {
+    shell: true,
+    stdio: 'inherit',
+    cwd: path.join(__dirname, '../'),
+  }
+)
   .on('message', console.log)
   .on('error', console.error)
