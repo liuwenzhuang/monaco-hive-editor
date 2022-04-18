@@ -1,6 +1,7 @@
 import { ParseTree, TerminalNode } from 'antlr4ts/tree'
 import { ParserRuleContext, Token, TokenStream } from 'antlr4ts'
 import { TokenPosition, CaretPosition } from './completion'
+import { Symbol as CSymbol } from 'antlr4-c3'
 
 export function computeTokenPosition(
   parseTree: ParseTree,
@@ -57,4 +58,38 @@ function computeTokenPositionOfChildNode(
       }
     }
   }
+}
+
+export function getSpecifiedPostionSymbol<T extends CSymbol>(
+  symbols: T[],
+  tokenMap: {
+    startToken: Token
+    endToken?: Token
+  },
+  position: InsertPosition
+) {
+  return symbols.filter((symbol) => {
+    let symbolStopTokenIndex: number = null
+    try {
+      symbolStopTokenIndex = (symbol.context as any).stop.tokenIndex
+    } catch (_err) {
+      return false
+    }
+
+    const startToken = tokenMap.startToken
+    let endToken = tokenMap.endToken
+    if (!endToken) {
+      endToken = startToken
+    }
+
+    if (position === 'beforebegin') {
+      return symbolStopTokenIndex < startToken.tokenIndex
+    }
+    if (position === 'afterbegin' || position === 'beforeend') {
+      return symbolStopTokenIndex > startToken.tokenIndex && symbolStopTokenIndex < endToken.tokenIndex
+    }
+    if (position === 'afterend') {
+      return symbolStopTokenIndex > endToken.tokenIndex
+    }
+  })
 }

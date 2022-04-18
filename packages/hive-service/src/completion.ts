@@ -1,22 +1,15 @@
 /* eslint-disable no-case-declarations */
-import {
-  Create_table_stmtContext,
-  Drop_stmtContext,
-  HplsqlLexer,
-  HplsqlParser,
-  ProgramContext,
-  QidentContext,
-} from '@lwz/hive-parser'
+import { Create_table_stmtContext, Drop_stmtContext, HplsqlLexer, HplsqlParser, ProgramContext } from '@lwz/hive-parser'
 import { CharStreams, CommonTokenStream, Token, TokenStream } from 'antlr4ts'
 import { CodeCompletionCore, SymbolTable } from 'antlr4-c3'
 import { ParseTree, TerminalNode } from 'antlr4ts/tree'
 import { SymbolTableVisitor } from './symbol-table-visitor'
 import fuzzysort from 'fuzzysort'
-import { computeTokenPosition } from './compute-token-position'
+import { computeTokenPosition, getSpecifiedPostionSymbol } from './compute-token-position'
 import { SymbolKind } from './language-support'
 import { TableSymbol, UseSymbol } from './symbols/TopSymbols'
 import { getCurrentSqlInfo } from './util'
-import { isEmpty, isEqual } from 'lodash-es'
+import { isEmpty, isEqual, last } from 'lodash-es'
 import completionSupport from './completion-support'
 import { ColumnsRes, DatabasesRes, TablesRes } from './interface'
 
@@ -173,8 +166,8 @@ export function getSuggestionsForParseTree(
       return Promise.resolve(completions)
     }
     const dbSchemaList = symbolTable.getSymbolsOfType(UseSymbol)
-    const lastDbSchema = dbSchemaList ? dbSchemaList[dbSchemaList.length - 1] : undefined
     const curToken = prevTokens[prevTokens.length - 1]
+    const prevDbSchemas = getSpecifiedPostionSymbol(dbSchemaList, { startToken: curToken }, 'beforebegin')
     if (curToken?.type === HplsqlLexer.T_DOT) {
       // 处理 "db." 的情况
       const prevToken = prevTokens[prevTokens.length - 2]
@@ -182,12 +175,12 @@ export function getSuggestionsForParseTree(
         return extraOption?.tableReqCb?.(prevToken.text).then(completionSupport.tableSuggestionsMapper)
       }
     }
-    if (!lastDbSchema) {
+    if (isEmpty(prevDbSchemas)) {
       // 提示库
       return extraOption?.dbReqCb?.().then(completionSupport.databaseSuggestionsMapper)
     } else {
       // 提示 库下表
-      return extraOption?.tableReqCb?.(lastDbSchema.name).then(completionSupport.tableSuggestionsMapper)
+      return extraOption?.tableReqCb?.(last(prevDbSchemas).name).then(completionSupport.tableSuggestionsMapper)
     }
   }
 
@@ -196,12 +189,7 @@ export function getSuggestionsForParseTree(
 
     const startToken = postTokens[0]
     const endToken = postTokens[postTokens.length - 1]
-    const filteredTableList = tableList.filter((table) => {
-      const context = table.context as QidentContext
-      const tokenIndex = context.stop.tokenIndex
-      return tokenIndex >= startToken.tokenIndex && tokenIndex <= endToken.tokenIndex
-    })
-
+    const filteredTableList = getSpecifiedPostionSymbol(tableList, { startToken, endToken }, 'afterbegin')
     const len = filteredTableList.length
 
     const curToken = prevTokens[prevTokens.length - 1]
