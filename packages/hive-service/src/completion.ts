@@ -1,17 +1,17 @@
 /* eslint-disable no-case-declarations */
-import { Create_table_stmtContext, Drop_stmtContext, HplsqlLexer, HplsqlParser, ProgramContext } from '@lwz/hive-parser'
+import { HplsqlLexer, HplsqlParser, ProgramContext } from '@lwz/hive-parser'
 import { CharStreams, CommonTokenStream, Token, TokenStream } from 'antlr4ts'
 import { CodeCompletionCore, SymbolTable } from 'antlr4-c3'
 import { ParseTree, TerminalNode } from 'antlr4ts/tree'
 import { SymbolTableVisitor } from './symbol-table-visitor'
 import fuzzysort from 'fuzzysort'
-import { computeTokenPosition, getSpecifiedPostionSymbol } from './compute-token-position'
+import { computeTokenPosition } from './compute-token-position'
 import { SymbolKind } from './language-support'
-import { TableSymbol, UseSymbol } from './symbols/TopSymbols'
 import { getCurrentSqlInfo } from './util'
-import { isEmpty, isEqual, last } from 'lodash-es'
+import { isEqual } from 'lodash-es'
 import completionSupport from './completion-support'
 import { ColumnsRes, DatabasesRes, TablesRes } from './interface'
+import { CompletionType, getCompletions } from './completions'
 
 export interface CaretPosition {
   /**
@@ -62,27 +62,10 @@ export function setTokenMatcher(fn: (text: string, candidates: CompletionItem[])
   filterTokens = fn
 }
 
-/**
- * 检查当前 parseTree 是否存在于需要标明的 rule 中
- * @param parseTree
- * @returns
- */
-function checkShouldInsertTable(parseTree: ParseTree) {
-  let variable = parseTree
-  while (variable) {
-    const containTable = [Drop_stmtContext, Create_table_stmtContext].some((item) => variable instanceof item)
-    if (containTable) {
-      return true
-    }
-    variable = variable.parent
-  }
-  return false
-}
-
 export function getSuggestionsForParseTree(
   parser: HplsqlParser,
   parseTree: ParseTree,
-  [prevTokens, postTokens, _tokens]: [Token[], Token[], Token[]],
+  [prevTokens, postTokens, tokens]: [Token[], Token[], Token[]],
   symbolTableFn: () => SymbolTable,
   currentSymbolTableFn: () => SymbolTable,
   position: TokenPosition,
@@ -141,15 +124,15 @@ export function getSuggestionsForParseTree(
   ])
   const candidates = core.collectCandidates(position.index)
 
-  let completions: CompletionItem[] = []
+  const completions: CompletionItem[] = []
 
   // 是否忽略其他的提示侯选者
-  let ignoreOtherCandidates = false
+  const ignoreOtherCandidates = false
 
   const symbolTable = symbolTableFn()
 
   if (candidates.rules.has(HplsqlParser.RULE_useSuggest)) {
-    return extraOption?.dbReqCb?.().then(completionSupport.databaseSuggestionsMapper)
+    return getCompletions(CompletionType.USE, symbolTable, [prevTokens, postTokens, tokens], extraOption)
   }
 
   if (candidates.rules.has(HplsqlParser.RULE_table_name)) {
@@ -165,95 +148,36 @@ export function getSuggestionsForParseTree(
       // 建表语句的 表名 不需要提示
       return Promise.resolve(completions)
     }
-    const dbSchemaList = symbolTable.getSymbolsOfType(UseSymbol)
-    const curToken = prevTokens[prevTokens.length - 1]
-    const prevDbSchemas = getSpecifiedPostionSymbol(dbSchemaList, { startToken: curToken }, 'beforebegin')
-    if (curToken?.type === HplsqlLexer.T_DOT) {
-      // 处理 "db." 的情况
-      const prevToken = prevTokens[prevTokens.length - 2]
-      if (prevToken) {
-        return extraOption?.tableReqCb?.(prevToken.text).then(completionSupport.tableSuggestionsMapper)
-      }
-    }
-    if (isEmpty(prevDbSchemas)) {
-      // 提示库
-      return extraOption?.dbReqCb?.().then(completionSupport.databaseSuggestionsMapper)
-    } else {
-      // 提示 库下表
-      return extraOption?.tableReqCb?.(last(prevDbSchemas).name).then(completionSupport.tableSuggestionsMapper)
-    }
+    return getCompletions(CompletionType.TABLE_NAME, symbolTable, [prevTokens, postTokens, tokens], extraOption)
   }
 
   if (candidates.rules.has(HplsqlParser.RULE_select_list)) {
-    const tableList = symbolTable.getSymbolsOfType(TableSymbol) ?? []
-
-    const startToken = postTokens[0]
-    const endToken = postTokens[postTokens.length - 1]
-    const filteredTableList = getSpecifiedPostionSymbol(tableList, { startToken, endToken }, 'afterbegin')
-    const len = filteredTableList.length
-
-    const curToken = prevTokens[prevTokens.length - 1]
-    if (curToken?.type === HplsqlLexer.T_DOT) {
-      const tableToken = prevTokens[prevTokens.length - 2]
-      if (tableToken) {
-        const table = filteredTableList.find(
-          (table) => table.name === tableToken.text || table.aliasName === tableToken.text
-        )
-        if (table) {
-          // 表名.列名
-          return extraOption?.columnReqCb?.(table.db, table.name).then(completionSupport.columnSuggestionsMapper)
-        }
-      }
-    }
-
-    if (len > 1) {
-      // 多个表，需要先提示表
-      completions = filteredTableList.map<CompletionItem>((table) => {
-        const tableName = table.aliasName ?? table.name
-        const dbPrefix = table.db ? `${table.db}.` : ''
-        return {
-          label: tableName,
-          insertText: tableName,
-          kind: SymbolKind.TableLiteral,
-          detail: `${dbPrefix}${tableName}`,
-        }
-      })
-      ignoreOtherCandidates = true
-    }
-
-    if (len === 1) {
-      // 只有一张表，直接请求表下字段
-      const firstTable = filteredTableList[0]
-      return extraOption?.columnReqCb?.(firstTable.db, firstTable.name).then(completionSupport.columnSuggestionsMapper)
-    }
+    return getCompletions(CompletionType.SELECT_LIST, symbolTable, [prevTokens, postTokens, tokens], extraOption)
   }
 
-  candidates.rules.forEach((_callStack, key) => {
-    switch (key) {
-      case HplsqlParser.RULE_ifNotExistsSuggest:
-        completions.push({
-          label: 'IF NOT EXISTS',
-          insertText: 'IF NOT EXISTS',
-          kind: SymbolKind.StringLiteral,
-          detail: 'Literal - Keywords',
-          sortText: 'a',
-        })
-        ignoreOtherCandidates = true
-        break
-      case HplsqlParser.RULE_ifExistsSuggest:
-        completions.push({
-          label: 'IF EXISTS',
-          insertText: 'IF EXISTS',
-          kind: SymbolKind.StringLiteral,
-          detail: 'Literal - Keywords',
-          sortText: 'a',
-        })
-        ignoreOtherCandidates = true
-        break
-      default:
-        break
-    }
-  })
+  if (candidates.rules.has(HplsqlParser.RULE_ifNotExistsSuggest)) {
+    return Promise.resolve([
+      {
+        label: 'IF NOT EXISTS',
+        insertText: 'IF NOT EXISTS',
+        kind: SymbolKind.StringLiteral,
+        detail: 'Literal - Keywords',
+        sortText: 'a',
+      },
+    ] as CompletionItem[])
+  }
+
+  if (candidates.rules.has(HplsqlParser.RULE_ifExistsSuggest)) {
+    return Promise.resolve([
+      {
+        label: 'IF EXISTS',
+        insertText: 'IF EXISTS',
+        kind: SymbolKind.StringLiteral,
+        detail: 'Literal - Keywords',
+        sortText: 'a',
+      },
+    ] as CompletionItem[])
+  }
 
   if (!ignoreOtherCandidates) {
     candidates.tokens.forEach((_, k) => {
