@@ -17,6 +17,21 @@ function onDOMContentLoaded() {
       'ON (c.ID = o.CUSTOMER_ID);',
       'create table mammut_qa.students(id int, age char(2));',
       'select from testTable1;',
+      ...[
+        'SELECT',
+        't1.record_id AS record_id',
+        'FROM (',
+        '    SELECT id AS record_id',
+        '    FROM demo.ods_pos_record',
+        "    WHERE ds='${azkaban.flow.1.days.ago}'",
+        ') t1',
+        'LEFT OUTER JOIN (',
+        '    SELECT card_id',
+        '    FROM demo.ods_pos_employee_rel',
+        "    WHERE ds='${azkaban.flow.1.days.ago}' AND rel_status=1",
+        ') t2',
+        'ON t1.card_id=t2.card_id;',
+      ],
     ].join('\n'),
   })
 
