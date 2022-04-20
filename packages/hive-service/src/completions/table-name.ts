@@ -28,8 +28,11 @@ class CompletionTableName extends CompletionBase {
       // 提示库
       return extraOption?.dbReqCb?.().then(completionSupport.databaseSuggestionsMapper)
     } else {
-      // 提示 库下表
-      return extraOption?.tableReqCb?.(last(prevDbSchemas).name).then(completionSupport.tableSuggestionsMapper)
+      // 提示 库 和 `use db;` 中指定的库下的表
+      return Promise.all([
+        extraOption?.tableReqCb?.(last(prevDbSchemas).name).then(completionSupport.tableSuggestionsMapper),
+        extraOption?.dbReqCb?.().then(completionSupport.databaseSuggestionsMapper),
+      ]).then(([tables, dbs]) => [...tables, ...dbs])
     }
   }
 }
