@@ -8,7 +8,7 @@ import fuzzysort from 'fuzzysort'
 import { computeTokenPosition } from './compute-token-position'
 import { SymbolKind } from './language-support'
 import { getCurrentSqlInfo } from './util'
-import { isEqual } from 'lodash-es'
+import { findLastIndex, isEqual } from 'lodash-es'
 import completionSupport from './completion-support'
 import { ColumnsRes, DatabasesRes, TablesRes } from './interface'
 import { CompletionType, getCompletions } from './completions'
@@ -152,6 +152,20 @@ export function getSuggestionsForParseTree(
   }
 
   if (candidates.rules.has(HplsqlParser.RULE_select_list)) {
+    const rules = candidates.rules.get(HplsqlParser.RULE_select_list)
+    let ruleList = rules.ruleList
+    // 最近的 select
+    ruleList = ruleList.slice(findLastIndex(ruleList, (rule) => rule === HplsqlParser.RULE_select_stmt))
+    const selectTokens = prevTokens.slice(findLastIndex(prevTokens, (token) => token.type === HplsqlParser.T_SELECT))
+    if (
+      isEqual(ruleList.slice(-2), [HplsqlParser.RULE_fullselect_stmt_item, HplsqlParser.RULE_subselect_stmt]) &&
+      [HplsqlParser.T_SELECT, HplsqlParser.T_FROM].every(
+        (type) => selectTokens.findIndex((token) => token.type === type) !== -1
+      )
+    ) {
+      // `select from _ ` 提示表
+      return getCompletions(CompletionType.TABLE_NAME, symbolTable, [prevTokens, postTokens, tokens], extraOption)
+    }
     return getCompletions(CompletionType.SELECT_LIST, symbolTable, [prevTokens, postTokens, tokens], extraOption)
   }
 
